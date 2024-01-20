@@ -22,7 +22,7 @@ function Admin() {
   const [price, setPrice] = useState('');
   const [products, setProducts] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
+  const [url, setUrl] = useState('');
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [videoDevices, setVideoDevices] = useState([]);
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;

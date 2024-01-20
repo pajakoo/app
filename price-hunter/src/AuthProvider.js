@@ -8,16 +8,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = () => {
-    window.open(`${process.env.REACT_APP_API_URL}/auth/google`, "_self")
+    window.open(`/auth/google`, "_self")
   };
 
 	const logout = () => {
-		window.open(`${process.env.REACT_APP_API_URL}/auth/logout`, "_self");
+		window.open(`/auth/logout`, "_self");
 	};
 
   const getUser = async () => {
 		try {
-			const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/profile`, { withCredentials: true });
+			const { data } = await axios.get(`/profile`, { withCredentials: true });
 			setUser(data._json);
 		} catch (err) {
 			console.log(err);

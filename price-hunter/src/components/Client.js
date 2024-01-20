@@ -62,7 +62,7 @@ function Client() {
 
   const getStores = async () => {
 		try {
-			const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/stores`, { withCredentials: true });
+			const { data } = await axios.get(`/api/stores`, { withCredentials: true });
       setStores(data);
 		} catch (err) {
 			console.log(err);
@@ -76,7 +76,7 @@ function Client() {
 
   
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/products-client`)
+    fetch(`/api/products-client`)
       .then((response) => response.json())
       .then((data) => {
         setSuggestedProducts(data);
@@ -86,7 +86,7 @@ function Client() {
       });
 
       
-      // fetch(`${process.env.REACT_APP_API_URL}/api/stores`)
+      // fetch(`/api/stores`)
       // .then((response) => response.json())
       // .then((data) => {
       //   setStores(data);
@@ -133,7 +133,7 @@ function Client() {
   }, [productPriceHistories]);
 
   const fetchPriceHistoryForStore = (barcode, productId, storeId) => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/product/${barcode}/prices/${storeId}`)
+    fetch(`/api/product/${barcode}/prices/${storeId}`)
     .then((response) => response.json())
     .then((data) => {
       setProductPriceHistories((prevHistories) => ({
@@ -144,7 +144,7 @@ function Client() {
   }
 
   const fetchPriceHistory = (barcode, productId) => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/product/${barcode}/history`)
+    fetch(`/api/product/${barcode}/history`)
       .then((response) => response.json())
       .then((data) => {
         setProductPriceHistories((prevHistories) => ({
@@ -188,7 +188,7 @@ function Client() {
  
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/cheapest`, JSON.stringify(shoppingList), {
+      const response = await axios.post(`/api/cheapest`, JSON.stringify(shoppingList), {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -200,7 +200,7 @@ function Client() {
 
 
 
-    // fetch(`${process.env.REACT_APP_API_URL}/api/cheapest`, {
+    // fetch(`/api/cheapest`, {
     //   method: 'POST',
     //   headers: {
     //     'Content-Type': 'application/json',
