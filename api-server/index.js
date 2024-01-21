@@ -6,44 +6,21 @@ const authRoute = require("./routes/auth");
 const cookieSession = require("cookie-session");
 const passportStrategy = require("./passport");
 const path = require('path');
+const Product = require('./models/Product');
+const Price = require('./models/Price');
+const Store = require('./models/Store');
+const Users = require('./models/Users');
+const Role = require('./models/Role');
 
-const app = express();
-
-
-
-app.use(express.json());
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_CONNECTION}@cluster0.udwqatw.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
-// const uri = "mongodb://localhost:27017/"
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-        useNewUrlParser: true, //?????
-        useUnifiedTopology: true //?????
-    }
-});
-
-async function run() {
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
-    }
-}
-run().catch(console.dir);
-
-
+const { ObjectId } = require('mongodb');
+const client  = require("./connectdb/client");
 const dbName = process.env.DB_NAME;
 const db = client.db(dbName);
+
+const app = express();
+app.use(express.json());
+
+
 
 app.set("trust proxy", 1);
 
@@ -69,6 +46,96 @@ app.use(
 );
 
 app.use("/auth", authRoute);
+
+
+
+// API endpoint to create a new shopping list
+app.post('/api/shopping-lists', async (req, res) => {
+    const { userId, products } = req.body;
+    await client.connect();
+
+    try {
+        const shoppingListData = {
+            userId: new ObjectId(userId),
+            products: products.map(product => ({
+                productId: new ObjectId(product.productId),
+                quantity: product.quantity || 1, // You can include quantity if needed
+            })),
+        };
+
+        const result = await db.collection('shoppingLists').insertOne(shoppingListData);
+        const createdList = await db.collection('shoppingLists').findOne({ _id: result.insertedId });
+
+        res.status(201).json(createdList);
+    } catch (error) {
+        console.error('Error creating shopping list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
+// API endpoint to get user-specific shopping lists
+app.get('/api/shopping-lists', async (req, res) => {
+    // const { userId } = req.params;
+    // console.log(userid,'gg')
+    await client.connect();
+    try {
+        const userLists = await db.collection('shoppingLists').find({ userId: new ObjectId('65ad401141a0f35f212e79ba') }).toArray();
+        res.json(userLists);
+    } catch (error) {
+        console.error('Error fetching user shopping lists:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
+// API endpoint to update a shopping list
+app.put('/api/shopping-lists/:listId', async (req, res) => {
+    const { listId } = req.params;
+    const { products } = req.body;
+    await client.connect();
+
+    try {
+        const updatedList = await db.collection('shoppingLists').findOneAndUpdate(
+            { _id: new ObjectId(listId) },
+            { $set: { products: products.map(product => ({ productId: new ObjectId(product.productId), quantity: product.quantity })) } },
+            { returnDocument: 'after' }
+        );
+
+        res.json(updatedList.value);
+    } catch (error) {
+        console.error('Error updating shopping list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
+// API endpoint to delete a shopping list
+app.delete('/api/shopping-lists/:listId', async (req, res) => {
+    const { listId } = req.params;
+    await client.connect();
+
+    try {
+        const result = await db.collection('shoppingLists').deleteOne({ _id: new ObjectId(listId) });
+
+        if (result.deletedCount > 0) {
+            res.json({ message: 'Shopping list deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Shopping list not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting shopping list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        await client.close();
+    }
+});
+
+// ... (existing code)
+
 
 app.put('/api/users/:userId/roles', async (req, res) => {
     const { userId } = req.params;
@@ -105,9 +172,38 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-app.get('/profile', (req, res) => {
-  res.json(req.user);
+
+app.get('/api/profile', async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (req.isAuthenticated()) {
+      // Retrieve the user information from the database based on user id
+      console.log('gg:', req.user.id);
+      const user = await db.collection('users').findOne({ googleId: req.user.id});
+
+      if (user) {
+        // Return the basic user information
+        res.json({
+          userId: user._id,
+          email: user.email,
+          name:user.name
+          // Add other properties you want to include
+        });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } else {
+      // Return an error if the user is not authenticated
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    }
 });
+
 app.get('/api/userRoles', async (req, res) => {
     await client.connect();
     try {
@@ -567,29 +663,36 @@ app.listen(port, () => console.log(`Listenting on port ${port}...`));
 
  
 // Assuming your static files are in the 'build' directory inside 'price-hunter'
-const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
+// const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
 
-app.use(express.static(staticFilesPath));
+// app.use(express.static(staticFilesPath));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(staticFilesPath, 'index.html'));
-});
-
-
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(staticFilesPath, 'index.html'));
+// });
 
 
-// {
-//     "dependencies": {
-//       "cookie-session": "^2.0.0",
-//       "cors": "^2.8.5",
-//       "dotenv": "^16.3.1",
-//       "express": "^4.18.2",
-//       "jsonwebtoken": "^9.0.2",
-//       "passport": "^0.5.2",
-//       "passport-google-oauth20": "^2.0.0"
-//     }
-//   }
+
+
+
+
+
+
+
+
+// // {
+// //     "dependencies": {
+// //       "cookie-session": "^2.0.0",
+// //       "cors": "^2.8.5",
+// //       "dotenv": "^16.3.1",
+// //       "express": "^4.18.2",
+// //       "jsonwebtoken": "^9.0.2",
+// //       "passport": "^0.5.2",
+// //       "passport-google-oauth20": "^2.0.0"
+// //     }
+// //   }
   
+
 
 
 
@@ -603,6 +706,43 @@ app.get('*', (req, res) => {
 // require("dotenv").config();
 // const app = express();
 // const PORT = process.env.PORT || 3000;
+
+
+
+// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+// //const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_CONNECTION}@cluster0.udwqatw.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+// const uri = "mongodb://localhost:27017/"
+
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri, {
+//     serverApi: {
+//         version: ServerApiVersion.v1,
+//         strict: true,
+//         deprecationErrors: true,
+//         useNewUrlParser: true, //?????
+//         useUnifiedTopology: true //?????
+//     }
+// });
+
+// async function run() {
+//     try {
+//         // Connect the client to the server	(optional starting in v4.7)
+//         await client.connect();
+//         // Send a ping to confirm a successful connection
+//         await client.db("admin").command({ ping: 1 });
+//         console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//     } finally {
+//         // Ensures that the client will close when you finish/error
+//         await client.close();
+//     }
+// }
+// run().catch(console.dir);
+
+
+// const dbName = process.env.DB_NAME;
+// const db = client.db(dbName);
+
+
 
 // app.use(express.json());
 // app.use(passport.initialize());
@@ -662,9 +802,118 @@ app.get('*', (req, res) => {
 // );
 
 // // Profile route to demonstrate authentication
-// app.get('/profile', (req, res) => {
+// app.get('/api/profile', (req, res) => {
 //   res.json(req.user);
 // });
+
+// // app.get('/api/users', async (req, res) => {
+// //     await client.connect();
+// //     try {
+// //         // Fetch all users from the 'users' collection in MongoDB
+// //         const users = await db.collection('users').find().toArray();
+// //         res.json(users);
+// //     } catch (error) {
+// //         console.error('Error fetching users:', error.message);
+// //         res.status(500).json({ error: 'Internal Server Error' });
+// //     }
+// // });
+
+// app.get('/api/stores', async (req, res) => {
+//     await client.connect();
+//     try {
+//         const collection = db.collection('stores');
+//         const stores = await collection.find({}, { name: 1 }).toArray();
+//         res.json(stores);
+//     } catch (error) {
+//         console.error('Грешка при извличане на магазините:', error);
+//         res.status(500).json({ error: 'Възникна грешка при извличане на магазините' });
+//     }
+// });
+
+// // API endpoint to get user-specific shopping lists
+// app.get('/api/shopping-lists/:userId', async (req, res) => {
+//     const { userId } = req.params;
+//     await client.connect();
+// console.log('ggggg',userId);
+//     try {
+//         const userLists = await db.collection('shoppingLists').find({ userId: new ObjectId(userId) }).toArray();
+//         res.json(userLists);
+//     } catch (error) {
+//         console.error('Error fetching user shopping lists:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     } finally {
+//         await client.close();
+//     }
+// });
+
+// app.get('/api/products-client', async (req, res) => {
+//     await client.connect();
+//     try {
+//         const collection = db.collection('products');
+//         const products = await collection.aggregate([
+//             {
+//                 $lookup: {
+//                     from: 'prices',
+//                     localField: '_id',
+//                     foreignField: 'product',
+//                     as: 'priceData'
+//                 }
+//             },
+//             {
+//                 $unwind: {
+//                     path: '$priceData',
+//                     preserveNullAndEmptyArrays: true
+//                 }
+//             },
+//             {
+//                 $lookup: {
+//                     from: 'stores',
+//                     localField: 'store',
+//                     foreignField: '_id',
+//                     as: 'storeData'
+//                 }
+//             },
+//             {
+//                 $unwind: {
+//                     path: '$storeData',
+//                     preserveNullAndEmptyArrays: true
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: '$barcode',
+//                     product: { $first: '$$ROOT' }
+//                 }
+//             },
+//             {
+//                 $replaceRoot: {
+//                     newRoot: '$product'
+//                 }
+//             },
+//             {
+//                 $project: {
+//                     _id: 1,
+//                     barcode: 1,
+//                     name: 1,
+//                     location: 1,
+//                     storeId: '$storeData._id',
+//                     store: '$storeData.name',
+//                     price: {
+//                         $ifNull: ['$priceData.price', '$price']
+//                     },
+//                     date: {
+//                         $ifNull: ['$priceData.date', null]
+//                     }
+//                 }
+//             }
+//         ]).toArray();
+//         res.json(products);
+//     } catch (err) {
+//         console.error('Грешка при търсене на продуктите', err);
+//         res.status(500).json({ error: 'Възникна грешка' });
+//     }
+// });
+
 
 // app.listen(PORT, () => {
 //   console.log(`Server is running on http://localhost:${PORT}`);

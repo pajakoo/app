@@ -3,7 +3,7 @@ import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faSearch, faLineChart, faLocationArrow} from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faSearch, faSave, faLineChart, faLocationArrow} from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
 import { Line } from 'react-chartjs-2';
@@ -21,6 +21,7 @@ import {
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
 import axios from 'axios';
+import { useAuth } from '../AuthProvider'
 
 ChartJS.register(
   CategoryScale,
@@ -46,9 +47,9 @@ function Client() {
   const [isStoreSelected, setisStoreSelected] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
   const [selectedStoreLocation, setSelectedStoreLocation] = useState(null);
-  
+  const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [selectedProduct1, setSelectedProduct1] = useState(null);
-
+  const { user } = useAuth();
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
@@ -62,7 +63,7 @@ function Client() {
 
   const getStores = async () => {
 		try {
-			const { data } = await axios.get(`/api/stores`, { withCredentials: true });
+			const { data } = await axios.get(`${url}/api/stores`, { withCredentials: true });
       setStores(data);
 		} catch (err) {
 			console.log(err);
@@ -76,7 +77,7 @@ function Client() {
 
   
   useEffect(() => {
-    fetch(`/api/products-client`)
+    fetch(`${url}/api/products-client`)
       .then((response) => response.json())
       .then((data) => {
         setSuggestedProducts(data);
@@ -86,7 +87,7 @@ function Client() {
       });
 
       
-      // fetch(`/api/stores`)
+      // fetch(`${url}/api/stores`)
       // .then((response) => response.json())
       // .then((data) => {
       //   setStores(data);
@@ -133,7 +134,7 @@ function Client() {
   }, [productPriceHistories]);
 
   const fetchPriceHistoryForStore = (barcode, productId, storeId) => {
-    fetch(`/api/product/${barcode}/prices/${storeId}`)
+    fetch(`${url}/api/product/${barcode}/prices/${storeId}`)
     .then((response) => response.json())
     .then((data) => {
       setProductPriceHistories((prevHistories) => ({
@@ -144,7 +145,7 @@ function Client() {
   }
 
   const fetchPriceHistory = (barcode, productId) => {
-    fetch(`/api/product/${barcode}/history`)
+    fetch(`${url}/api/product/${barcode}/history`)
       .then((response) => response.json())
       .then((data) => {
         setProductPriceHistories((prevHistories) => ({
@@ -178,6 +179,31 @@ function Client() {
     });
   };
 
+  const handleSaveList = async () => {
+    try {
+      // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
+      const response = await axios.post(`${url}/api/shopping-lists`, {
+        userId: user.id,
+        products: shoppingList.map(product => ({
+          productId: product._id,
+          quantity: 1, // You can adjust the quantity as needed
+        })),
+      });
+
+      // Handle success, e.g., show a success message
+      console.log('Shopping list saved successfully');
+
+      // Optionally, you can reset the shopping list after saving
+      setShoppingList([]);
+
+      return response.data; // You can return the response data if needed
+    } catch (error) {
+      // Handle errors, e.g., show an error message
+      console.error('Error saving the shopping list:', error.message);
+      throw error; // Re-throw the error to handle it further if needed
+    }
+  };
+
   const handleFindCheapest = async() => {
     if (shoppingList.length === 0) {
       return;
@@ -188,7 +214,7 @@ function Client() {
  
 
     try {
-      const response = await axios.post(`/api/cheapest`, JSON.stringify(shoppingList), {
+      const response = await axios.post(`${url}/api/cheapest`, JSON.stringify(shoppingList), {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -200,7 +226,7 @@ function Client() {
 
 
 
-    // fetch(`/api/cheapest`, {
+    // fetch(`${url}/api/cheapest`, {
     //   method: 'POST',
     //   headers: {
     //     'Content-Type': 'application/json',
@@ -325,8 +351,8 @@ function Client() {
 
   return (
     <section className="shadow-blue white-bg padding">
-      <h1 className="mt-4">Списък за пазаруване</h1>
-      <div className="mb-3">
+      <h4 className="mt-4">Списък за пазаруване</h4>
+      <div className="mb-3 col-md-4">
         {suggestedProducts.length > 0 && (
           <Typeahead
             id="productTypeahead"
@@ -338,7 +364,11 @@ function Client() {
         )}
       </div>
       <div className="mb-3 d-flex flex-wrap">
-        <button className="btn btn-primary mb-2 w-100" onClick={handleFindCheapest}>
+            
+        <button className="btn btn-primary mb-2 w-50" onClick={handleSaveList}>
+          <FontAwesomeIcon icon={faSave} /> Запази списъка
+        </button>
+        <button className="btn btn-primary mb-2 w-50" onClick={handleFindCheapest}>
           <FontAwesomeIcon icon={faSearch} /> Намери най-евтино
         </button>
       </div>

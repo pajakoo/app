@@ -6,19 +6,20 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
 
   const login = () => {
-    window.open(`/auth/google`, "_self")
+    window.open(`${url}/auth/google`, "_self")
   };
 
 	const logout = () => {
-		window.open(`/auth/logout`, "_self");
+		window.open(`${url}/auth/logout`, "_self");
 	};
 
   const getUser = async () => {
 		try {
-			const { data } = await axios.get(`/profile`, { withCredentials: true });
-			setUser(data._json);
+			const {data} = await axios.get(`${url}/api/profile`, { withCredentials: true });
+			setUser(data);
 		} catch (err) {
 			console.log(err);
 		}

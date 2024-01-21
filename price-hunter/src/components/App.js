@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import Client from './Client';
 import Admin from './Admin';
 import UserManagement from './UserManagement';
+import UserLists from './UserLists';
 import { useAuth } from '../AuthProvider'
 let deferredPrompt;
 
@@ -109,6 +110,11 @@ function App() {
                   Admin
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/user-lists">
+                  Мойте запазени списъци
+                </Link>
+              </li>
               {checkUserRights('65660572e8d841f79b8fe614') && (
                 <li className="nav-item">
                   <Link className="nav-link" to="/users">
@@ -163,6 +169,7 @@ function App() {
           <Route element={<Admin />} path="/admin" />
           <Route element={<PrivateRoutes />}>
             <Route element={<UserManagement />} path="/users" />
+            <Route element={<UserLists />} path="/user-lists" />
           </Route>
           {user ? <Route element={<Client />} path="/" /> : <Route element={<Login />} path="/login" />}
         </Routes>
