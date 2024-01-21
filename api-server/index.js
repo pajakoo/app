@@ -663,13 +663,13 @@ app.listen(port, () => console.log(`Listenting on port ${port}...`));
 
  
 // Assuming your static files are in the 'build' directory inside 'price-hunter'
-// const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
+const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
 
-// app.use(express.static(staticFilesPath));
+app.use(express.static(staticFilesPath));
 
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(staticFilesPath, 'index.html'));
-// });
+app.get('*', (req, res) => {
+  res.sendFile(path.join(staticFilesPath, 'index.html'));
+});
 
 
 
