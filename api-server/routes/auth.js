@@ -25,7 +25,14 @@ router.get("/login/failed", (req, res) => {
 	});
 });
 
-router.get("/google", passport.authenticate("google", ["profile", "email"]));
+// router.get("/google", passport.authenticate("google", ["profile", "email"]));
+router.get('/google', (req, res, next) => {
+	passport.authenticate('google', {
+	  prompt: 'select_account',
+	  scope: ['profile', 'email'],
+	})(req, res, next);
+  });
+
 
 router.get(
 	'/google/callback',
@@ -37,12 +44,13 @@ router.get(
 		const user = req.user._json;
 		const existingUserCursor = await db.collection('users').find({ googleId: user.sub });
 		const existingUser = await existingUserCursor.next();
-  
+		console.log(existingUser)
 		if (!existingUser) {
 		  // If the user doesn't exist, create a new user
 		  const newUser = {
 			googleId: user.sub,
 			name: user.name,
+			picture: user.picture,
 			email: user.email,
 			roles: [new ObjectId('65ad37260d46ccb8d29534f8')], //diff in db!!!!
 		  };

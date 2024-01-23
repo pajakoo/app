@@ -53,6 +53,7 @@ app.use("/auth", authRoute);
 app.post('/api/shopping-lists', async (req, res) => {
     const { userId, products } = req.body;
     await client.connect();
+    console.log('zz', userId, products);
 
     try {
         const shoppingListData = {
@@ -76,17 +77,21 @@ app.post('/api/shopping-lists', async (req, res) => {
 });
 
 // API endpoint to get user-specific shopping lists
-app.get('/api/shopping-lists', async (req, res) => {
-    // const { userId } = req.params;
-    // console.log(userid,'gg')
+app.get('/api/shopping-lists/:userId', async (req, res) => {
+    const { userId } = req.params;
     await client.connect();
     try {
-        const userLists = await db.collection('shoppingLists').find({ userId: new ObjectId('65ad401141a0f35f212e79ba') }).toArray();
+        // Convert userId to ObjectId
+        const userIdObject = new ObjectId(userId);
+
+        // Assuming your 'shoppingLists' collection has the structure similar to the following
+        const userLists = await db.collection('shoppingLists').find({ userId: userIdObject }).toArray();
+
         res.json(userLists);
     } catch (error) {
         console.error('Error fetching user shopping lists:', error);
         res.status(500).json({ error: 'Internal Server Error' });
-    } finally {
+    }  finally {
         await client.close();
     }
 });
@@ -174,11 +179,12 @@ app.get('/api/users', async (req, res) => {
 });
 
 app.get('/api/profile', async (req, res) => {
+    await client.connect();
   try {
     // Check if the user is authenticated
     if (req.isAuthenticated()) {
       // Retrieve the user information from the database based on user id
-      console.log('gg:', req.user.id);
+      console.log('gg:', req.user);
       const user = await db.collection('users').findOne({ googleId: req.user.id});
 
       if (user) {
@@ -186,6 +192,7 @@ app.get('/api/profile', async (req, res) => {
         res.json({
           userId: user._id,
           email: user.email,
+          picture:user.picture,
           name:user.name
           // Add other properties you want to include
         });
@@ -663,13 +670,13 @@ app.listen(port, () => console.log(`Listenting on port ${port}...`));
 
  
 // Assuming your static files are in the 'build' directory inside 'price-hunter'
-const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
+// const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
 
-app.use(express.static(staticFilesPath));
+// app.use(express.static(staticFilesPath));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(staticFilesPath, 'index.html'));
-});
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(staticFilesPath, 'index.html'));
+// });
 
 
 

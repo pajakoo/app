@@ -13,6 +13,33 @@
   }
 }
 
+
+.default-user-picture {
+  position: relative;
+  width: 200px;
+  height: 33px;
+  svg {
+    width: 86px;
+    position: relative;
+    top: -371px;
+    left: -12px;
+    z-index: -5;
+  }
+}
+
+.mobile-header  {
+
+  .default-user-picture {
+    svg {
+      width: 35px;
+      position: relative;
+      top: -409px;
+      left: 33px;
+      z-index: -5;
+    }
+  }
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;

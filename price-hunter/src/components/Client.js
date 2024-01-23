@@ -180,10 +180,11 @@ function Client() {
   };
 
   const handleSaveList = async () => {
+    console.log('pppp',user);
     try {
       // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
       const response = await axios.post(`${url}/api/shopping-lists`, {
-        userId: user.id,
+        userId: user.userId,
         products: shoppingList.map(product => ({
           productId: product._id,
           quantity: 1, // You can adjust the quantity as needed
@@ -365,9 +366,9 @@ function Client() {
       </div>
       <div className="mb-3 d-flex flex-wrap">
             
-        <button className="btn btn-primary mb-2 w-50" onClick={handleSaveList}>
+       {user ? <button className="btn btn-primary mb-2 w-50" onClick={handleSaveList}>
           <FontAwesomeIcon icon={faSave} /> Запази списъка
-        </button>
+        </button> : null}
         <button className="btn btn-primary mb-2 w-50" onClick={handleFindCheapest}>
           <FontAwesomeIcon icon={faSearch} /> Намери най-евтино
         </button>
