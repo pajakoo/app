@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -50,6 +50,9 @@ function Client() {
   const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [selectedProduct1, setSelectedProduct1] = useState(null);
   const { user } = useAuth();
+
+  const typeaheadRef = useRef(null);
+
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
@@ -159,6 +162,12 @@ function Client() {
   };
 
   const handleInputChange = (selected) => {
+    const inputElement = typeaheadRef.current?.inputNode; // Access the inputNode of the Typeahead component
+    inputElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (inputElement) {
+      inputElement.readOnly = true;
+    }
+
     if (selected && selected.length > 0) {
       const selectedProduct1 = selected[0];
       const isProductAlreadyAdded = shoppingList.some((product) => product.name === selectedProduct1.name);
@@ -356,6 +365,7 @@ function Client() {
       <div className="mb-3 col-md-4">
         {suggestedProducts.length > 0 && (
           <Typeahead
+          ref={typeaheadRef} 
             id="productTypeahead"
             options={suggestedProducts}
             labelKey={(option) => option.name}
