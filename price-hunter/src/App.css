@@ -1,3 +1,13 @@
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  h4, a, button , .user-name, .site-slogan{
+  color:#8b93be!important;
+  }
+}
+
+
 .App {
   text-align: center;
 }
@@ -81,16 +91,7 @@
 
 
 
-
-
-@import url(https://fonts.googleapis.com/css?family=Poppins:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i);@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,400i,600,600i,700,700i&display=swap&subset=cyrillic-ext);body {
-  color: #888;
-  background-color: #f6f7ff;
-  font-family: "Open Sans",sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  overflow-x: hidden
-}
+ 
 
 img {
   max-width: 100%;
@@ -251,7 +252,6 @@ pre {
 
 header.left {
   color: #fff;
-  background: #4a63e7;
   border-radius: 20px;
   min-height: 620px;
   max-height: 620px;
@@ -265,6 +265,7 @@ header.left {
 
 header.left nav {
   margin-top: 40px
+
 }
 
 header.left .header-inner {
@@ -273,7 +274,7 @@ header.left .header-inner {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 30px;
+  padding: 24px;
   position: absolute
 }
 
@@ -305,13 +306,13 @@ header.left button.close {
   border: 0;
   -webkit-appearance: none;
   opacity: 1;
-  color: #ff5959;
-  font-weight: 400;
+  color: #4a63e7;
+  font-weight: 900;
   font-size: 16px;
   border-radius: 50%;
   width: 20px;
   height: 20px;
-  line-height: 22px;
+  line-height: 10px;
   margin-top: 16px;
   margin-right: 18px;
   position: relative;
@@ -330,17 +331,18 @@ header a:hover {
 header .site-title {
   display: block;
   font-size: 28px;
-  font-weight: 700
+  font-weight: 700;
 }
 
-header .site-title.dot:after {
-  content: "";
-  background-color: #ff5959;
-  border-radius: 50%;
-  display: inline-block;
-  margin-left: 5px;
-  height: 8px;
-  width: 8px
+.user-name {
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  color:white;
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 header .site-slogan {
@@ -393,7 +395,6 @@ header .copyright {
 }
 
 .mobile-header {
-  background: #4a63e7;
   border-radius: 20px;
   display: none;
   transform: translateX(0);
@@ -414,19 +415,17 @@ header .copyright {
 .mobile-header .site-title {
   vertical-align: middle;
   font-size: 24px;
-  font-weight: 700
+  font-weight: 700;
+  margin-top: 12px;
+  font-size: 18px;
+  color:#8b93be;
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.mobile-header .site-title.dot:after {
-  content: "";
-  background-color: #ff5959;
-  border-radius: 50%;
-  display: inline-block;
-  margin-left: 5px;
-  height: 6px;
-  width: 6px
-}
-
+ 
 .mobile-header button.menu-icon {
   cursor: pointer;
   background: transparent;
@@ -437,7 +436,7 @@ header .copyright {
 }
 
 .mobile-header button.menu-icon span {
-  background: #fff;
+  background: #8b93be;
   border-radius: 10px;
   display: block;
   height: 4px;
@@ -1621,8 +1620,8 @@ section.padding-60 {
 @media only screen and (max-width: 991px) {
   .site-wrapper {
       width:100%;
-      padding-left: 15px;
-      padding-right: 15px
+      padding-left: 6px;
+      padding-right: 6px
   }
 
   header.left {

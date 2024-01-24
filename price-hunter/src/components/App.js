@@ -50,9 +50,43 @@ function App() {
   const [isOpen, setIsOpen] = useState(true);
   const { user, login, logout } = useAuth();
   const [toggleHeader, setToggleHeader] = useState(false);
-  const handleToggle = () => {
-    setToggleHeader(!toggleHeader);
+  const [imageError, setImageError] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
   };
+
+
+
+useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    const debouncedHandleResize = debounce(handleResize, 200); // Adjust the delay as needed
+
+    window.addEventListener('resize', debouncedHandleResize);
+
+    return () => {
+      window.removeEventListener('resize', debouncedHandleResize);
+    };
+  }, []);
+  
+  const handleToggle = () => {
+    console.log(isMobile);
+    if (isMobile) {
+      setToggleHeader(!toggleHeader);
+    }
+  };
+  
   const checkUserRights = (roles) => {
     // Check if the user has the 'admin' ro
     //console.log('right', currentUser.roles);
@@ -72,7 +106,7 @@ function App() {
     return (
       <div>
         <button className="btn btn-link nav-link" onClick={logout}>
-          <i className="fa fa-sign-out"></i> Sign Out
+          <i className="fa fa-sign-out"></i> Изход
         </button>
       </div>
     );
@@ -95,44 +129,44 @@ function App() {
         <header className={toggleHeader ? "left float-start shadow-dark open" : "left float-start shadow-dark  " }>
           <button onClick={handleToggle} type="button" className="close" aria-label="Close"><span aria-hidden="true">×</span></button>
           <div className="header-inner d-flex align-items-start flex-column">
-          { user ? <img src={user.picture} alt={user.name} /> : <div className="default-user-picture"><svg width="800px" height="800px" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-  <path fill="#494c4e" d="M9 0a9 9 0 0 0-9 9 8.654 8.654 0 0 0 .05.92 9 9 0 0 0 17.9 0A8.654 8.654 0 0 0 18 9a9 9 0 0 0-9-9zm5.42 13.42c-.01 0-.06.08-.07.08a6.975 6.975 0 0 1-10.7 0c-.01 0-.06-.08-.07-.08a.512.512 0 0 1-.09-.27.522.522 0 0 1 .34-.48c.74-.25 1.45-.49 1.65-.54a.16.16 0 0 1 .03-.13.49.49 0 0 1 .43-.36l1.27-.1a2.077 2.077 0 0 0-.19-.79v-.01a2.814 2.814 0 0 0-.45-.78 3.83 3.83 0 0 1-.79-2.38A3.38 3.38 0 0 1 8.88 4h.24a3.38 3.38 0 0 1 3.1 3.58 3.83 3.83 0 0 1-.79 2.38 2.814 2.814 0 0 0-.45.78v.01a2.077 2.077 0 0 0-.19.79l1.27.1a.49.49 0 0 1 .43.36.16.16 0 0 1 .03.13c.2.05.91.29 1.65.54a.49.49 0 0 1 .25.75z"/>
-</svg></div> }
-            <a className="site-title dot mt-3" href="/multipage">{user ? user.name : ''}</a>
-            <span className="site-slogan">Web Developer</span>
+          <div className="image-holder">
+            { user && !imageError && <img src={user.picture} alt={user.name} onError={() => setImageError(true)} />} 
+          </div>
+          <div className="user-name">{user ? user.name : ''}</div>
+            <span className="site-slogan">{user ? user.roles : ''}</span>
             <nav>
               <ul className="navbar-nav">
               <li className="nav-item">
-                <Link className="nav-link" to="/">
-                  Home
+                <Link className="nav-link" to="/" onClick={handleToggle}>
+                  Разгледай продути
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin">
-                  Admin
+                <Link className="nav-link" to="/admin" onClick={handleToggle}>
+                  Добави продукти
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/user-lists">
+                <Link className="nav-link" to="/user-lists" onClick={handleToggle}>
                   Мойте запазени списъци
                 </Link>
               </li>
               {checkUserRights('65660572e8d841f79b8fe614') && (
                 <li className="nav-item">
-                  <Link className="nav-link" to="/users">
-                    Users
+                  <Link className="nav-link" to="/users" onClick={handleToggle}>
+                    Права
                   </Link>
                 </li>
               )}
             </ul>
             <ul className="navbar-nav ms-auto">
-              <li className="nav-item">
+              <li className="nav-item" onClick={handleToggle}>
                 <Logout /> 
               </li>
             </ul>
             </nav>
             <div className="footer mt-auto">
-              <ul className="social-icons list-inline">
+              {/* <ul className="social-icons list-inline">
                 <li className="list-inline-item"><a href="https://facebook.com"><svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 320 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                       <path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"></path>
                     </svg></a></li>
@@ -154,20 +188,22 @@ function App() {
                 <li className="list-inline-item"><a href="https://dribbble.com/"><svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                       <path d="M256 8C119.252 8 8 119.252 8 256s111.252 248 248 248 248-111.252 248-248S392.748 8 256 8zm163.97 114.366c29.503 36.046 47.369 81.957 47.835 131.955-6.984-1.477-77.018-15.682-147.502-6.818-5.752-14.041-11.181-26.393-18.617-41.614 78.321-31.977 113.818-77.482 118.284-83.523zM396.421 97.87c-3.81 5.427-35.697 48.286-111.021 76.519-34.712-63.776-73.185-116.168-79.04-124.008 67.176-16.193 137.966 1.27 190.061 47.489zm-230.48-33.25c5.585 7.659 43.438 60.116 78.537 122.509-99.087 26.313-186.36 25.934-195.834 25.809C62.38 147.205 106.678 92.573 165.941 64.62zM44.17 256.323c0-2.166.043-4.322.108-6.473 9.268.19 111.92 1.513 217.706-30.146 6.064 11.868 11.857 23.915 17.174 35.949-76.599 21.575-146.194 83.527-180.531 142.306C64.794 360.405 44.17 310.73 44.17 256.323zm81.807 167.113c22.127-45.233 82.178-103.622 167.579-132.756 29.74 77.283 42.039 142.053 45.189 160.638-68.112 29.013-150.015 21.053-212.768-27.882zm248.38 8.489c-2.171-12.886-13.446-74.897-41.152-151.033 66.38-10.626 124.7 6.768 131.947 9.055-9.442 58.941-43.273 109.844-90.795 141.978z"></path>
                     </svg></a></li>
-              </ul>
+              </ul> */}
             </div>
           </div>
         </header>
 
         <div className={toggleHeader ? "mobile-header py-2 px-3 mt-4 push" : "mobile-header py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
-          { user ? <img src={user.picture} alt={user.name} /> : <div className="default-user-picture"><svg width="800px" height="800px" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-  <path fill="#494c4e" d="M9 0a9 9 0 0 0-9 9 8.654 8.654 0 0 0 .05.92 9 9 0 0 0 17.9 0A8.654 8.654 0 0 0 18 9a9 9 0 0 0-9-9zm5.42 13.42c-.01 0-.06.08-.07.08a6.975 6.975 0 0 1-10.7 0c-.01 0-.06-.08-.07-.08a.512.512 0 0 1-.09-.27.522.522 0 0 1 .34-.48c.74-.25 1.45-.49 1.65-.54a.16.16 0 0 1 .03-.13.49.49 0 0 1 .43-.36l1.27-.1a2.077 2.077 0 0 0-.19-.79v-.01a2.814 2.814 0 0 0-.45-.78 3.83 3.83 0 0 1-.79-2.38A3.38 3.38 0 0 1 8.88 4h.24a3.38 3.38 0 0 1 3.1 3.58 3.83 3.83 0 0 1-.79 2.38 2.814 2.814 0 0 0-.45.78v.01a2.077 2.077 0 0 0-.19.79l1.27.1a.49.49 0 0 1 .43.36.16.16 0 0 1 .03.13c.2.05.91.29 1.65.54a.49.49 0 0 1 .25.75z"/>
-</svg></div> }
+         
+         
+          <div className="image-holder">
+          { user && !imageError && <img src={user.picture} alt={user.name} onError={() => setImageError(true)} />} 
+          </div>  
           <span className="site-title dot ms-2" >{user ? user.name : ''}</span>
         </div>
         
-        <main className={toggleHeader ? "content float-end push" :  "content float-end"}>
+        <main className={toggleHeader ? "content float-lg-end  push" :  "content float-lg-end"}>
         <Routes>
           <Route element={<Client />} path="/" />
           <Route element={<Admin />} path="/admin" />
