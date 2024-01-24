@@ -193,7 +193,8 @@ app.get('/api/profile', async (req, res) => {
           userId: user._id,
           email: user.email,
           picture:user.picture,
-          name:user.name
+          name:user.name,
+          roles: user.roles
           // Add other properties you want to include
         });
       } else {
