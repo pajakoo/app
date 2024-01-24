@@ -95,10 +95,15 @@ useEffect(() => {
   };
   const Login = () => {
     return (
-      <div>
-        <h2>Login</h2>
-        <button onClick={login} >Login with Google</button>
+      <section className="shadow-blue white-bg padding">
+      <h4 className="mt-4">Вход в приложението</h4>
+      <div className="mb-3">
+          <button className="google-button" onClick={login}>
+            <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="google" />
+            <span>Влез с Google</span>
+          </button>
       </div>
+      </section>
     );
   };
 
@@ -193,14 +198,12 @@ useEffect(() => {
           </div>
         </header>
 
-        <div className={toggleHeader ? "mobile-header py-2 px-3 mt-4 push" : "mobile-header py-2 px-3 mt-4 " }>
+        <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
-         
-         
-          <div className="image-holder">
+          <span className="site-title dot ms-2" >{user ? user.name : ''}</span>
+          <div className="image-holder float-end">
           { user && !imageError && <img src={user.picture} alt={user.name} onError={() => setImageError(true)} />} 
           </div>  
-          <span className="site-title dot ms-2" >{user ? user.name : ''}</span>
         </div>
         
         <main className={toggleHeader ? "content float-lg-end  push" :  "content float-lg-end"}>

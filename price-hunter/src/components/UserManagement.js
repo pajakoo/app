@@ -49,49 +49,55 @@ const UserManagement = () => {
 
 
   return (
-    <div>
-      <h2>User Management</h2>
-      <table className="user-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Action</th>
+    <section className="shadow-blue white-bg padding">
+      <h4 className="mt-4">Потребители</h4>
+      <div className="mb-3">
+      <div className="table-responsive">
+  <table className="user-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Roles</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {users &&
+        users.map((user) => (
+          <tr key={user._id}>
+            <td>{user.name}</td>
+            <td>{user.email}</td>
+            <td>
+              {roles && (
+                <select
+                  className="role-select"
+                  multiple
+                  value={selectedRoles[user._id] || []}
+                  onChange={(e) => handleRoleChange(user._id, e)}
+                >
+                  {roles && roles.map((role) => (
+                    <option key={role._id} value={role._id}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </td>
+            <td>
+              <button className="edit-button" onClick={() => handleEditRoles(user._id)}>
+                Edit Roles
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {users &&
-            users.map((user) => (
-              <tr key={user._id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>
-                  {roles && (
-                    <select
-                      className="role-select"
-                      multiple
-                      value={selectedRoles[user._id] || []}
-                      onChange={(e) => handleRoleChange(user._id, e)}
-                    >
-                      {roles && roles.map((role) => (
-                        <option key={role._id} value={role._id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </td>
-                <td>
-                  <button className="edit-button" onClick={() => handleEditRoles(user._id)}>
-                    Edit Roles
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+    </tbody>
+  </table>
+</div>
+
+
+      </div>
+    </section>
   );
 };
 

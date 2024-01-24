@@ -31,8 +31,9 @@ const UserLists = () => {
   }
 
   return (
-    <div>
-      <h2>Your Shopping Lists</h2>
+    <section className="shadow-blue white-bg padding">
+      <h4 className="mt-4">Запазени Списъци </h4>
+      <div className="mb-3 ">
       {shoppingLists.length > 0 ? (
         <Row xs={1} md={2} lg={3} className="g-4">
           {shoppingLists.map((list) => (
@@ -58,7 +59,8 @@ const UserLists = () => {
       ) : (
         <p>No shopping lists found.</p>
       )}
-    </div>
+      </div>
+    </section>
   );
 };
 

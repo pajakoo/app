@@ -11,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
 function Admin() {
-  const scannerContainerRef = useRef(null);
+  // const scannerContainerRef = useRef(null);
   const videoRef = useRef(null);
   const codeReader = useRef(null);
   const [barcode, setBarcode] = useState('');
@@ -96,48 +96,48 @@ function Admin() {
     }
   }, [selectedCamera]);
 
-  useEffect(() => {
-    Quagga.init(
-      {
-        inputStream: {
-          name: 'Live',
-          type: 'LiveStream',
-          target: scannerContainerRef.current,
-          constraints: {
-            width: 320,
-            height: 200,
-            facingMode: 'environment', // use the rear camera
-          },
-        },
-        decoder: {
-          readers: ['ean_reader'], // specify the barcode format to scan (EAN in this case)
-        },
-      },
-      (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          Quagga.start();
-        }
-      }
-    );
+  // useEffect(() => {
+  //   Quagga.init(
+  //     {
+  //       inputStream: {
+  //         name: 'Live',
+  //         type: 'LiveStream',
+  //         target: scannerContainerRef.current,
+  //         constraints: {
+  //           width: 320,
+  //           height: 200,
+  //           facingMode: 'environment', // use the rear camera
+  //         },
+  //       },
+  //       decoder: {
+  //         readers: ['ean_reader'], // specify the barcode format to scan (EAN in this case)
+  //       },
+  //     },
+  //     (err) => {
+  //       if (err) {
+  //         console.error(err);
+  //       } else {
+  //         Quagga.start();
+  //       }
+  //     }
+  //   );
 
-    Quagga.onDetected(async (result) => {
-      const scannedBarcode = result.codeResult.code;
-      setBarcode(scannedBarcode);
-      try {
-        const response = await fetch(`${url}/api/searchProduct?code=${scannedBarcode}`);
-        const responseData = await response.json();
-        setName(responseData.name);
-      } catch (error) {
-        console.error(error);
-      }
-    });
+  //   Quagga.onDetected(async (result) => {
+  //     const scannedBarcode = result.codeResult.code;
+  //     setBarcode(scannedBarcode);
+  //     try {
+  //       const response = await fetch(`${url}/api/searchProduct?code=${scannedBarcode}`);
+  //       const responseData = await response.json();
+  //       setName(responseData.name);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   });
 
-    return () => {
-      Quagga.stop();
-    };
-  }, []);
+  //   return () => {
+  //     Quagga.stop();
+  //   };
+  // }, []);
 
   const handleNameFieldClick = async () => {
     try {
@@ -224,20 +224,21 @@ function Admin() {
 
   return (
     <section className="shadow-blue white-bg padding">
-      <h1>Добави продукт по баркод</h1>
+    <h4 className="mt-4">Добави продукт по баркод</h4>
+    <div className="mb-3">
       {/* <div className="d-flex justify-content-center mb-3">
         <video ref={videoRef} width={300} height={200} autoPlay={true} />
       </div> */}
       
-      <div ref={scannerContainerRef} />
+      {/* <div ref={scannerContainerRef} /> */}
 
-      <select className="form-select mb-3" value={selectedCamera} onChange={handleCameraChange}>
+      {/* <select className="form-select mb-3" value={selectedCamera} onChange={handleCameraChange}>
         {videoDevices.map((device) => (
           <option key={device.deviceId} value={device.deviceId}>
             {device.label}
           </option>
         ))}
-      </select>
+      </select> */}
       <div className="mb-3">
         <input
           type="text"
@@ -277,7 +278,7 @@ function Admin() {
           <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
         </div>
       </div>
-      <h2>Продукти</h2>
+      <h4>Продукти</h4>
 
       <ul className="list-group">
         {products.map((product, index) => (
@@ -325,6 +326,7 @@ function Admin() {
             <Marker lat={currentLocation.lat} lng={currentLocation.lng} />
           </GoogleMapReact>
         )}
+      </div>
       </div>
     </section>
   );

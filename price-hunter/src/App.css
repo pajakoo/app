@@ -192,12 +192,12 @@ pre {
 
 ::selection {
   color: #fff;
-  background: #ff5959
+  background: #7479d9
 }
 
 ::-moz-selection {
   color: #fff;
-  background: #ff5959
+  background: #7479d9
 }
 
 .z-1 {
@@ -302,7 +302,7 @@ header.left button.close {
   display: none;
   outline: none;
   padding: 0;
-  background-color: #fff;
+  background-color: #8b93be30;
   border: 0;
   -webkit-appearance: none;
   opacity: 1;
@@ -463,7 +463,6 @@ header .copyright {
 }
 
 main.content {
-  margin-top: 50px;
   margin-bottom: 50px;
   width: 875px;
   transform: translateX(0);
@@ -510,7 +509,10 @@ section {
   border-radius: 20px;
   position: relative;
   overflow: hidden;
-  margin-top: 50px
+  margin-top: 50px;
+  @media (max-width: 992px) {
+    margin-top: 80px
+  }
 }
 
 section.white-bg {
@@ -1067,7 +1069,7 @@ section.padding-60 {
 }
 
 .shadow-blue {
-  box-shadow: 0 6px 15px 0 rgba(74,99,231,.1)
+  box-shadow: 0 6px 15px 0 rgba(0,0,0,.2)
 }
 
 .shadow-dark {
@@ -1639,7 +1641,9 @@ section.padding-60 {
   }
 
   main.content {
-      margin-top: 100px;
+      @media (min-width: 992px) {
+        margin-top: 100px;
+      }
       float: none!important;
       width: 100%
   }
@@ -1772,7 +1776,6 @@ section.padding-60 {
   font-weight: 700;
   line-height: 1;
   color: #000;
-  text-shadow: 0 1px 0 #fff;
   opacity: .5
 }
 
@@ -1792,3 +1795,30 @@ button.close {
   border: 0;
   -webkit-appearance: none
 }
+
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  padding-left: 60px;
+  padding-right: 60px;
+  width: fit-content;
+  border: 1px solid gray;
+  border-radius: 20px;
+  transition: 0.5s;
+  background-color:white;
+  &:hover {
+    cursor: pointer;
+    background-color: #8b93be17;
+  }
+  
+  img {
+    padding-right: 0.25rem;
+  }
+}
+
+
+
+
