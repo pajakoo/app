@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+// const session = require('express-session');
+// const MongoDBStore = require('connect-mongodb-session')(session);
 const cors = require("cors");
 const passport = require("passport");
 const authRoute = require("./routes/auth");
@@ -11,20 +13,29 @@ const Price = require('./models/Price');
 const Store = require('./models/Store');
 const Users = require('./models/Users');
 const Role = require('./models/Role');
-
 const { ObjectId } = require('mongodb');
-const client  = require("./connectdb/client");
-const dbName = process.env.DB_NAME;
-const db = client.db(dbName);
+// const client  = require("./connectdb/client");
+// const db = client.db(process.env.DB_NAME);
+
+const mongoose = require('mongoose');
+
+mongoose
+  .connect(process.env.DB_CLIENT_URL)
+  .then(() => {
+    console.log('Connected to MongoDB!');
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+// const store = new MongoDBStore({
+//     uri: process.env.MONGODB_URI,
+//     collection: 'sessions',
+// });
 
 const app = express();
 app.use(express.json());
-
-
-
 app.set("trust proxy", 1);
-
-
 app.use(
     cookieSession({
         name: "session",
@@ -32,6 +43,17 @@ app.use(
         maxAge: 24 * 60 * 60 * 100,
     })
 );
+
+
+// app.use(session({
+//     secret: 'your-secret-key',
+//     resave: false,
+//     saveUninitialized: false,
+//     store: store,
+//     cookie: {
+//         maxAge: 24 * 60 * 60 * 1000, // Example: 1 day
+//     },
+// }));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -46,8 +68,6 @@ app.use(
 );
 
 app.use("/auth", authRoute);
-
-
 
 // API endpoint to create a new shopping list
 app.post('/api/shopping-lists', async (req, res) => {
@@ -140,7 +160,6 @@ app.delete('/api/shopping-lists/:listId', async (req, res) => {
 });
 
 // ... (existing code)
-
 
 app.put('/api/users/:userId/roles', async (req, res) => {
     const { userId } = req.params;
@@ -324,6 +343,8 @@ app.get('/api/products', async (req, res) => {
     } catch (err) {
         console.error('Грешка при търсене на продуктите', err);
         res.status(500).json({ error: 'Възникна грешка' });
+    } finally {
+        await client.close();
     }
 });
 
@@ -400,10 +421,14 @@ app.get('/api/products-client', async (req, res) => {
                 }
             }
         ]).toArray();
+        // console.log(products);   aggregate().explain("executionStats"); //for stats of the query
+     
         res.json(products);
     } catch (err) {
         console.error('Грешка при търсене на продуктите', err);
         res.status(500).json({ error: 'Възникна грешка' });
+    } finally {
+        await client.close();
     }
 });
 
@@ -585,77 +610,70 @@ app.get('/api/products/:barcode', async (req, res) => {
         res.status(500).json({ message: 'Възникна грешка при намиране на продукта' });
     }
 });
-
 app.post('/api/products', async (req, res) => {
     const { barcode, name, price, store, location } = req.body;
-    await client.connect();
+    const { addedBy } = '65b57567c5d84dd73354ac84'; // Assuming user information is available in req.user
+console.log(req.user,'zzzz');
     try {
-        const collection = db.collection('products');
-
+        // Check if the store exists
         const existingStore = await db.collection('stores').findOne({ name: store });
 
         if (existingStore) {
-            const existingProduct = await collection.findOne({ barcode, store: existingStore._id });
+            // Check if the product already exists in the store
+            const existingProduct = await db.collection('products').findOne({ barcode, store: existingStore._id });
 
             if (existingProduct) {
+                // Check if the product was added by the current user
+                if (existingProduct.addedBy.toString() !== addedBy) {
+                    return res.status(403).json({ message: 'Нямате права да обновявате този продукт.' });
+                }
+
+                // Update existing product
                 existingProduct.price = price;
                 existingProduct.location = location;
-                await collection.updateOne({ _id: existingProduct._id }, { $set: existingProduct });
 
+                await db.collection('products').updateOne({ _id: existingProduct._id }, { $set: existingProduct });
+
+                // Insert new price data
                 const priceData = {
                     store: existingProduct.store,
                     product: existingProduct._id,
                     date: Date.now(),
                     price: existingProduct.price
                 };
+
                 await db.collection('prices').insertOne(priceData);
 
                 res.json({ message: 'Продуктът е обновен успешно' });
             } else {
+                // Create a new product
                 const productData = {
                     barcode,
                     name,
                     price,
                     store: existingStore._id,
-                    location
+                    location,
+                    addedBy: new ObjectId(addedBy) // Added addedBy field to track the user
                 };
-                await collection.insertOne(productData);
 
+                const result = await db.collection('products').insertOne(productData);
+                const newProductId = result.insertedId;
+
+                // Insert new price data
                 const priceData = {
                     store: existingStore._id,
-                    product: productData._id,
+                    product: newProductId,
                     date: Date.now(),
                     price: productData.price
                 };
+
                 await db.collection('prices').insertOne(priceData);
 
                 res.status(201).json({ message: 'Продуктът е успешно създаден' });
             }
         } else {
-            const storeData = {
-                name: store,
-                location
-            };
-            const newStore = await db.collection('stores').insertOne(storeData);
-
-            const productData = {
-                barcode,
-                name,
-                price,
-                store: newStore.insertedId,
-                location
-            };
-            await collection.insertOne(productData);
-
-            const priceData = {
-                store: newStore.insertedId,
-                product: productData._id,
-                date: Date.now(),
-                price: productData.price
-            };
-            await db.collection('prices').insertOne(priceData);
-
-            res.status(201).json({ message: 'Продуктът е успешно създаден' });
+            // Handle case where store doesn't exist
+            res.status(404).json({ message: 'Магазинът не съществува' });
         }
     } catch (error) {
         console.error('Грешка при създаване/обновяване на продукта:', error);
@@ -671,18 +689,13 @@ app.listen(port, () => console.log(`Listenting on port ${port}...`));
 
  
 // Assuming your static files are in the 'build' directory inside 'price-hunter'
-const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
+// const staticFilesPath = path.join(__dirname, '..', 'price-hunter', 'build');
 
-app.use(express.static(staticFilesPath));
+// app.use(express.static(staticFilesPath));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(staticFilesPath, 'index.html'));
-});
-
-
-
-
-
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(staticFilesPath, 'index.html'));
+// });
 
 
 
@@ -700,9 +713,6 @@ app.get('*', (req, res) => {
 // //     }
 // //   }
   
-
-
-
 
 
 // const express = require('express');
@@ -737,7 +747,7 @@ app.get('*', (req, res) => {
 //         // Connect the client to the server	(optional starting in v4.7)
 //         await client.connect();
 //         // Send a ping to confirm a successful connection
-//         await client.db("admin").command({ ping: 1 });
+//         await client.db(process.env.DB_NAME).command({ ping: 1 });
 //         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 //     } finally {
 //         // Ensures that the client will close when you finish/error

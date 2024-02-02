@@ -1,8 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = process.env.DB_CLIENT_URL;
-console.log(uri)
+ 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
+const client = new MongoClient(process.env.DB_CLIENT_URL, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
@@ -17,7 +16,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        await client.db(process.env.DB_NAME).command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error

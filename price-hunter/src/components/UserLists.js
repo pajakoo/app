@@ -17,8 +17,8 @@ const UserLists = () => {
 
   const fetchShoppingLists = async () => {
     try {
-      const response = await axios.get(`${url}/api/shopping-lists/${user.userId}`);
-      console.log('gg:', response.data);
+      const response = await axios.get(`${url}/api/shopping-lists/${user._id}`);
+      console.log('list:', response);
       setShoppingLists(response.data);
       setLoading(false);
     } catch (error) {

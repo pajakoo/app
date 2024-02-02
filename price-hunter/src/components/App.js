@@ -65,8 +65,7 @@ function App() {
   };
 
 
-
-useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -89,9 +88,7 @@ useEffect(() => {
   
   const checkUserRights = (roles) => {
     // Check if the user has the 'admin' ro
-    //console.log('right', currentUser.roles);
-    //return currentUser && currentUser.roles.includes(roles);
-    return true;
+    return user && user.roles.includes(roles);
   };
   const Login = () => {
     return (
@@ -119,13 +116,9 @@ useEffect(() => {
 
   const PrivateRoutes = () => {
     return (
-      user ? <Outlet /> : <Navigate to="/login" />
+      user ? <Outlet /> : <Navigate to="/" />
     )
   }
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
 
   return (
     <div className="site-wrapper">
@@ -135,9 +128,9 @@ useEffect(() => {
           <button onClick={handleToggle} type="button" className="close" aria-label="Close"><span aria-hidden="true">×</span></button>
           <div className="header-inner d-flex align-items-start flex-column">
           <div className="image-holder">
-            { user && !imageError && <img src={user.picture} alt={user.name} onError={() => setImageError(true)} />} 
+            { user && !imageError && <img src={user.avatar} alt={user.displayname} onError={() => setImageError(true)} />} 
           </div>
-          <div className="user-name">{user ? user.name : ''}</div>
+          <div className="user-name">{user ? user.displayname : ''}</div>
             <span className="site-slogan">{user ? user.roles : ''}</span>
             <nav>
               <ul className="navbar-nav">
@@ -200,9 +193,9 @@ useEffect(() => {
 
         <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
-          <span className="site-title dot ms-2" >{user ? user.name : ''}</span>
+          <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span>
           <div className="image-holder float-end">
-          { user && !imageError && <img src={user.picture} alt={user.name} onError={() => setImageError(true)} />} 
+          { user && !imageError && <img src={user.avatar} alt={user.displayname} onError={() => setImageError(true)} />} 
           </div>  
         </div>
         

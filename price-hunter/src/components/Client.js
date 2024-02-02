@@ -49,10 +49,10 @@ function Client() {
   const [selectedStoreLocation, setSelectedStoreLocation] = useState(null);
   const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [selectedProduct1, setSelectedProduct1] = useState(null);
-  const { user } = useAuth();
+  const { user, login } = useAuth();
 
   const typeaheadRef = useRef(null);
-
+  // console.log(process.env.FIREBASE_API_KEY,'gg', process.env.REACT_APP_GOOGLE_API_KEY);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
@@ -193,7 +193,7 @@ function Client() {
     try {
       // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
       const response = await axios.post(`${url}/api/shopping-lists`, {
-        userId: user.userId,
+        userId: user._id,
         products: shoppingList.map(product => ({
           productId: product._id,
           quantity: 1, // You can adjust the quantity as needed
@@ -269,12 +269,12 @@ function Client() {
 
     shoppingList.forEach((product) => {
       const history = productPriceHistories[product._id];
-      //console.log('history',history);
+      console.log('history',history);
 
       if (history && history.length > 0) {
         const chartLabels = history.map((price) => moment(price.date).format('YYYY-MM-DD'));
         chartLabels.sort((a, b) => moment(a, 'YYYY-MM-DD').toDate() - moment(b, 'YYYY-MM-DD').toDate());
-        const chartData = history.map((price) => price.price);
+        const chartData = history.map((price) => price.price.$numberDecimal);
         const store = history.find((el) => {
           return stores[el.store];
         });
@@ -356,10 +356,24 @@ function Client() {
     );
   };
 
-
+  const Login = () => {
+    return (
+      <section className="shadow-blue white-bg padding">
+      <h4 className="mt-4">Вход в приложението</h4>
+      <div className="mb-3">
+          <button className="google-button" onClick={login}>
+            <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="google" />
+            <span>Влез с Google</span>
+          </button>
+      </div>
+      </section>
+    );
+  };
 
 
   return (
+    <>
+     {!user && <Login />  }
     <section className="shadow-blue white-bg padding">
       <h4 className="mt-4">Списък за пазаруване</h4>
       <div className="mb-3 col-md-4">
@@ -464,6 +478,8 @@ function Client() {
 
       {isLoaded && renderMap()}
     </section>
+    </>
+
   );
 }
 

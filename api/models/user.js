@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   googleId: { type: String, required: true },
@@ -11,4 +11,7 @@ const userSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Users', userSchema);
+const User = mongoose.model('Users', userSchema);
+
+export default User;
+

@@ -38,7 +38,6 @@ router.get(
 	'/google/callback',
 	passport.authenticate('google', { failureRedirect: '/' }),
 	async (req, res) => {
-		await client.connect();
 	  try {
 		// Check if the user already exists in the database
 		const user = req.user._json;
@@ -67,9 +66,7 @@ router.get(
 	  } catch (error) {
 		console.error('Грешка при обработка на потребителската информация:', error.message);
 		res.status(500).json({ error: 'Грешка при обработка на потребителската информация.' });
-	  } finally {
-        await client.close();
-    }
+	  } 
 	}
   );
   

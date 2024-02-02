@@ -22,7 +22,7 @@ function Admin() {
   const [price, setPrice] = useState('');
   const [products, setProducts] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [videoDevices, setVideoDevices] = useState([]);
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;
@@ -153,14 +153,14 @@ function Admin() {
     }
   };
 
-  const handleInputChange = (selected,e) => {
+  const handleInputChange = (selected, e) => {
     if (selected.length > 0) {
       setStore(selected[0].name || '');
-    }  
+    }
   };
 
   const handleAddProduct = async () => {
-      console.log(barcode, name, price, store,newStoreName, currentLocation);
+    console.log(barcode, name, price, store, newStoreName, currentLocation);
     try {
       if (store && !stores.some((s) => s.name === store)) {
         // Create a new store if it doesn't exist in the database
@@ -224,109 +224,110 @@ function Admin() {
 
   return (
     <section className="shadow-blue white-bg padding">
-    <h4 className="mt-4">Добави продукт по баркод</h4>
-    <div className="mb-3">
-      {/* <div className="d-flex justify-content-center mb-3">
+      <h4 className="mt-4">Добави продукт по баркод</h4>
+      <div className="mb-3">
+        {/* <div className="d-flex justify-content-center mb-3">
         <video ref={videoRef} width={300} height={200} autoPlay={true} />
       </div> */}
-      
-      {/* <div ref={scannerContainerRef} /> */}
 
-      {/* <select className="form-select mb-3" value={selectedCamera} onChange={handleCameraChange}>
+        {/* <div ref={scannerContainerRef} /> */}
+
+        {/* <select className="form-select mb-3" value={selectedCamera} onChange={handleCameraChange}>
         {videoDevices.map((device) => (
           <option key={device.deviceId} value={device.deviceId}>
             {device.label}
           </option>
         ))}
       </select> */}
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          value={barcode}
-          onChange={(e) => setBarcode(e.target.value)}
-          placeholder="Баркод"
-        />
-        <input
-          type="text"
-          className="form-control"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onClick={handleNameFieldClick}
-          placeholder="Име"
-        />
-        <Typeahead
-          onInputChange={ (text) => setNewStoreName(text)}
-          id="storeTypeahead"
-          options={stores.filter((option) => option.name && typeof option.name === 'string')}
-          labelKey="name"
-          placeholder="Магазин"
-          selected={store ? [store] : []}
-          onChange={handleInputChange}
-          filterBy={(option, props) =>
-            String(option.name).toLowerCase().includes(String(props.text).toLowerCase())
-          }
-        />
-        <input
-          type="number"
-          className="form-control"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Цена"
-        />
-        <div className="d-flex justify-content-end">
-          <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
+        <div className="mb-3">
+          <input
+            type="text"
+            className="form-control"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            placeholder="Баркод"
+          />
+          <input
+            type="text"
+            className="form-control"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onClick={handleNameFieldClick}
+            placeholder="Име"
+          />
+          <Typeahead
+            onInputChange={(text) => setNewStoreName(text)}
+            id="storeTypeahead"
+            options={Array.isArray(stores) ? stores.filter((option) => option.name && typeof option.name === 'string') : []}
+            labelKey="name"
+            placeholder="Магазин"
+            selected={store ? [store] : []}
+            onChange={handleInputChange}
+            filterBy={(option, props) =>
+              String(option.name).toLowerCase().includes(String(props.text).toLowerCase())
+            }
+          />
+
+          <input
+            type="number"
+            className="form-control"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Цена"
+          />
+          <div className="d-flex justify-content-end">
+            <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
+          </div>
         </div>
-      </div>
-      <h4>Продукти</h4>
+        <h4>Продукти</h4>
 
-      <ul className="list-group">
-        {products.map((product, index) => (
-          <li className="list-group-item" key={index}>
-            <div className="d-flex flex-column">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <b>{product.barcode}</b><br />
-                  <span className="text-muted">
-                    {product.date ? new Date(product.date).toLocaleDateString() : '-'}
-                  </span>
+        <ul className="list-group">
+          {products.map((product, index) => (
+            <li className="list-group-item" key={index}>
+              <div className="d-flex flex-column">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <b>{product.barcode}</b><br />
+                    <span className="text-muted">
+                      {product.date ? new Date(product.date).toLocaleDateString() : '-'}
+                    </span>
+                  </div>
+                  <button className="btn btn-link" onClick={() => handleDeleteProduct(product._id)}>
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
                 </div>
-                <button className="btn btn-link" onClick={() => handleDeleteProduct(product._id)}>
-                  <FontAwesomeIcon icon={faTrashAlt} />
-                </button>
+                <div className="mt-2">
+                  <div>
+                    <span className="font-weight-bold">Име:</span> {product.name}
+                  </div>
+                  <div>
+                    <span className="font-weight-bold">Цена:</span> {product.price.$numberDecimal} лв.
+                  </div>
+                  <div>
+                    <span className="font-weight-bold">Магазин:</span> {product.store}
+                  </div>
+                  <div>
+                    <span className="font-weight-bold">Локация:</span> {product.location.lat}, {product.location.lng}
+                  </div>
+                </div>
               </div>
-              <div className="mt-2">
-                <div>
-                  <span className="font-weight-bold">Име:</span> {product.name}
-                </div>
-                <div>
-                  <span className="font-weight-bold">Цена:</span> {product.price} лв.
-                </div>
-                <div>
-                  <span className="font-weight-bold">Магазин:</span> {product.store}
-                </div>
-                <div>
-                  <span className="font-weight-bold">Локация:</span> {product.location.lat}, {product.location.lng}
-                </div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <br />
+            </li>
+          ))}
+        </ul>
+        <br />
 
-      <div style={{ height: '400px', width: '100%' }}>
-        {currentLocation && (
-          <GoogleMapReact
-            bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_API_KEY }}
-            defaultCenter={currentLocation}
-            center={currentLocation}
-            defaultZoom={10}
-          >
-            <Marker lat={currentLocation.lat} lng={currentLocation.lng} />
-          </GoogleMapReact>
-        )}
-      </div>
+        <div style={{ height: '400px', width: '100%' }}>
+          {currentLocation && (
+            <GoogleMapReact
+              bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_API_KEY }}
+              defaultCenter={currentLocation}
+              center={currentLocation}
+              defaultZoom={10}
+            >
+              <Marker lat={currentLocation.lat} lng={currentLocation.lng} />
+            </GoogleMapReact>
+          )}
+        </div>
       </div>
     </section>
   );
