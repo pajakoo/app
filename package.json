@@ -7,7 +7,7 @@
     "scripts": {
         "dev": "nodemon api/index.js",
         "start": "node api/index.js",
-        "build": "npm install && npm install --prefix price-huter && npm run build --prefix price-huter"
+        "build": "npm install && npm install --prefix price-hunter && npm run build --prefix price-hunter"
     },
     "keywords": [],
     "author": "",
