@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: false,
     },
+    roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Role' }],
     email: {
       type: String,
       required: true,
