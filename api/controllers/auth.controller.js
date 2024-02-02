@@ -2,6 +2,7 @@ import User from '../models/user.model.js';
 import bcryptjs from 'bcryptjs';
 import { errorHandler } from '../utils/error.js';
 import jwt from 'jsonwebtoken';
+import {Types} from 'mongoose';
 
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -56,7 +57,7 @@ export const google = async (req, res, next) => {
         password: hashedPassword,
         avatar: req.body.photo,
         displayname: req.body.name,
-        roles: [new ObjectId('65660583e8d841f79b8fe615')]
+        roles: [new Types.ObjectId('65660583e8d841f79b8fe615')]
       });
       await newUser.save();
       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
