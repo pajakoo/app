@@ -18,7 +18,6 @@ const UserLists = () => {
   const fetchShoppingLists = async () => {
     try {
       const response = await axios.get(`${url}/api/shopping-lists/${user._id}`);
-      console.log('list:', response);
       setShoppingLists(response.data);
       setLoading(false);
     } catch (error) {
@@ -27,38 +26,38 @@ const UserLists = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return  (<section className="shadow-blue white-bg padding">
+    <h4 className="mt-4">Запазени Списъци </h4>
+    <div className="mb-3 "><div>Зареждане...</div></div></section>);
   }
 
   return (
     <section className="shadow-blue white-bg padding">
       <h4 className="mt-4">Запазени Списъци </h4>
       <div className="mb-3 ">
-      {shoppingLists.length > 0 ? (
-        <Row xs={1} md={2} lg={3} className="g-4">
-          {shoppingLists.map((list) => (
-            <Col key={list._id}>
-              <Card>
-                <Card.Body>
-                  <Card.Title>List ID: {list._id}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">User ID: {list.userId}</Card.Subtitle>
-                  <Card.Text>
+        {shoppingLists.length > 0 ? (
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {shoppingLists.map((list) => (
+              <Col key={list._id}>
+                <Card>
+                  <Card.Body>
+                    <Card.Title>{list.listName}</Card.Title>
+                    {/* <Card.Subtitle className="mb-2 text-muted">User ID: {list.userId}</Card.Subtitle> */}
                     <ul>
-                      {list.products.slice(0, 5).map((product) => (
+                      {list.products.map((product) => (
                         <li key={product.productId}>
-                          Product ID: {product.productId}, Quantity: {product.quantity}
+                        {product.name}
                         </li>
                       ))}
                     </ul>
-                  </Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      ) : (
-        <p>No shopping lists found.</p>
-      )}
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          <p>No shopping lists found.</p>
+        )}
       </div>
     </section>
   );

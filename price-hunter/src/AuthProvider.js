@@ -9,8 +9,9 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
-  // const navigate = useNavigate();
-  // navigate('/');
+  const navigate = useNavigate();
+
+
 
   const login = async() => {
     try {
@@ -32,9 +33,17 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await res.json();
       setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      navigate('/');
+
     } catch (error) {
       console.log('could not sign in with google', error);
     }
+  };
+
+  const checkIfUserIsLoggedIn = () => {
+    const storedUser = localStorage.getItem('user');
+    return Boolean(storedUser);
   };
 
   const logout = async () => {
@@ -44,6 +53,7 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
       if (data.success !== false) {
         setUser(null);
+        localStorage.removeItem('user');
         return;
       }
     } catch (error) {
@@ -67,8 +77,12 @@ export const AuthProvider = ({ children }) => {
   // }, []);
 
 
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem('user') ));
+  },[])
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, checkIfUserIsLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const shoppinglistSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User model
+  listName: { type: String, required: true },
   products: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' }, // Reference to Product model

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -6,6 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faSearch, faSave, faLineChart, faLocationArrow} from '@fortawesome/free-solid-svg-icons';
 import './styles.css';
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
+
+import Modal from "../components/Modal"
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import 'chartjs-adapter-moment';
@@ -50,7 +53,9 @@ function Client() {
   const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [selectedProduct1, setSelectedProduct1] = useState(null);
   const { user, login } = useAuth();
+  const [showModal, setShowModal] = useState(false);
 
+  const [name, setName] = useState('');
   const typeaheadRef = useRef(null);
   // console.log(process.env.FIREBASE_API_KEY,'gg', process.env.REACT_APP_GOOGLE_API_KEY);
 
@@ -58,11 +63,16 @@ function Client() {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
   });
 
+  const navigate = useNavigate();
+  
   const [chartDataConfig, setChartDataConfig] = useState({
     labels: [],
     datasets: [],
   });
 
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
+  };
 
   const getStores = async () => {
 		try {
@@ -194,6 +204,7 @@ function Client() {
       // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
       const response = await axios.post(`${url}/api/shopping-lists`, {
         userId: user._id,
+        listName:name,
         products: shoppingList.map(product => ({
           productId: product._id,
           quantity: 1, // You can adjust the quantity as needed
@@ -205,7 +216,8 @@ function Client() {
 
       // Optionally, you can reset the shopping list after saving
       setShoppingList([]);
-
+      setShowModal(!showModal);
+      navigate('/user-lists');
       return response.data; // You can return the response data if needed
     } catch (error) {
       // Handle errors, e.g., show an error message
@@ -355,26 +367,22 @@ function Client() {
       </GoogleMap>
     );
   };
-
-  const Login = () => {
-    return (
-      <section className="shadow-blue white-bg padding">
-      <h4 className="mt-4">Вход в приложението</h4>
-      <div className="mb-3">
-          <button className="google-button" onClick={login}>
-            <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="google" />
-            <span>Влез с Google</span>
-          </button>
-      </div>
-      </section>
-    );
-  };
-
-
+ 
   return (
     <>
-     {!user && <Login />  }
+     {/* {!user && <Login />  } */}
     <section className="shadow-blue white-bg padding">
+    <Modal show={showModal} content={()=>{return (<>
+      <input
+            type="text"
+            className="form-control"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Име на списъка"
+          />
+    
+    </>)}} onConfirmButtonClick={handleSaveList} onCloseButtonClick={toggleShowModal} />
+
       <h4 className="mt-4">Списък за пазаруване</h4>
       <div className="mb-3 col-md-4">
         {suggestedProducts.length > 0 && (
@@ -389,10 +397,10 @@ function Client() {
         )}
       </div>
       <div className="mb-3 d-flex flex-wrap">
-            
-       {user ? <button className="btn btn-primary mb-2 w-50" onClick={handleSaveList}>
+      {/* disabled={!user} */}
+        <button className="btn btn-primary mb-2 w-50"  onClick={toggleShowModal}>
           <FontAwesomeIcon icon={faSave} /> Запази списъка
-        </button> : null}
+        </button>  
         <button className="btn btn-primary mb-2 w-50" onClick={handleFindCheapest}>
           <FontAwesomeIcon icon={faSearch} /> Намери най-евтино
         </button>
@@ -475,7 +483,6 @@ function Client() {
           <p>Няма намерени резултати.</p>
         </div>
       )}
-
       {isLoaded && renderMap()}
     </section>
     </>

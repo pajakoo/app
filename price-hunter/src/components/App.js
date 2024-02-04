@@ -48,7 +48,7 @@ let deferredPrompt;
 
 function App() {
   const [isOpen, setIsOpen] = useState(true);
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, checkIfUserIsLoggedIn } = useAuth();
   const [toggleHeader, setToggleHeader] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -63,7 +63,10 @@ function App() {
       }, delay);
     };
   };
-
+  const checkUserRights = (roles) => {
+    return true;
+    // return user && user.roles.includes(roles);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -86,10 +89,7 @@ function App() {
     }
   };
   
-  const checkUserRights = (roles) => {
-    // Check if the user has the 'admin' ro
-    return user && user.roles.includes(roles);
-  };
+
   const Login = () => {
     return (
       <section className="shadow-blue white-bg padding">
@@ -116,13 +116,12 @@ function App() {
 
   const PrivateRoutes = () => {
     return (
-      user ? <Outlet /> : <Navigate to="/" />
+      user ? <Outlet /> : <Navigate to="/login" />
     )
   }
 
   return (
     <div className="site-wrapper">
-      <Router>
         {/* <button id="installButton">Install App</button> */}
         <header className={toggleHeader ? "left float-start shadow-dark open" : "left float-start shadow-dark  " }>
           <button onClick={handleToggle} type="button" className="close" aria-label="Close"><span aria-hidden="true">×</span></button>
@@ -149,7 +148,7 @@ function App() {
                   Мойте запазени списъци
                 </Link>
               </li>
-              {checkUserRights('65660572e8d841f79b8fe614') && (
+              { checkUserRights('65660572e8d841f79b8fe614') && (
                 <li className="nav-item">
                   <Link className="nav-link" to="/users" onClick={handleToggle}>
                     Права
@@ -207,10 +206,10 @@ function App() {
             <Route element={<UserManagement />} path="/users" />
             <Route element={<UserLists />} path="/user-lists" />
           </Route>
-          {user ? <Route element={<Client />} path="/" /> : <Route element={<Login />} path="/login" />}
+          {!user && <Route element={<Login />} path="/login" />}
+          <Route path="*" element={<Client />} />
         </Routes>
       </main>
-      </Router>
 
     </div>
   );

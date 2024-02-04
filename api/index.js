@@ -88,7 +88,6 @@ app.delete('/api/shopping-lists/:listId', async (req, res) => {
 });
 
 
-
 app.get('/api/products-client', async (req, res) => {
  
   try {
@@ -158,8 +157,6 @@ app.get('/api/products-client', async (req, res) => {
   } 
 });
 
-
-
 app.get('/api/searchProduct', async (req, res) => {
   const { code } = req.query;
  
@@ -191,8 +188,6 @@ app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
       res.status(500).json({ message: 'Възникна грешка при извличане на цените за продукта' });
   }
 });
-
-
 
 app.delete('/api/products/:id', async (req, res) => {
   const productId = req.params.id;
@@ -534,13 +529,14 @@ app.get('/api/userRoles', async (req, res) => {
 
 // API endpoint to create a new shopping list
 app.post('/api/shopping-lists', async (req, res) => {
-    const { userId, products } = req.body;
+    const { userId, products, listName } = req.body;
    
     console.log('zz', userId, products);
   
     try {
         const shoppingListData = {
             userId: new Types.ObjectId(userId),
+            listName:listName,
             products: products.map(product => ({
                 productId: new Types.ObjectId(product.productId),
                 quantity: product.quantity || 1, // You can include quantity if needed
@@ -557,28 +553,63 @@ app.post('/api/shopping-lists', async (req, res) => {
     } 
   });
   
-// API endpoint to get user-specific shopping lists
+// API endpoint to get user-specific shopping lists with product details
 app.get('/api/shopping-lists/:userId', async (req, res) => {
-  const { userId } = req.params;
- 
-  try {
+    const { userId } = req.params;
+  
+    try {
       // Convert userId to Types.ObjectId
       const userIdObject = new Types.ObjectId(userId);
-console.log('gg',userIdObject);
-      // Assuming your 'shoppingLists' collection has the structure similar to the following
+  
+      // Fetch user-specific shopping lists
       const userLists = await ShoppingList.find({ userId: userIdObject }).exec();
-
-      res.json(userLists);
-  } catch (error) {
+  
+      // Create an array to store the shopping list details with product names
+      const shoppingListDetails = [];
+  
+      // Loop through each shopping list
+      for (const list of userLists) {
+        const productList = [];
+  
+        // Loop through each product in the shopping list
+        for (const product of list.products) {
+          // Fetch product details based on product ID or barcode
+          const productDetails = await Product.findOne({
+            $or: [
+              { _id: product.productId }, // Assuming product.productId is the product ID
+              { barcode: product.barcode }, // Assuming product.barcode is the barcode
+            ],
+          }).exec();
+  
+          if (productDetails) {
+            // Include product details in the productList array
+            productList.push({
+              name: productDetails.name,
+              quantity: product.quantity,
+              // Include other product details if needed
+            });
+          }
+        }
+  
+        // Include shopping list details with product names in the response
+        shoppingListDetails.push({
+          listId: list._id,
+          products: productList,
+          listName:list.listName,
+          createdAt: list.createdAt,
+          updatedAt: list.updatedAt,
+          // Include other shopping list details if needed
+        });
+      }
+  
+      res.json(shoppingListDetails);
+    } catch (error) {
       console.error('Error fetching user shopping lists:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-  }  
-});
-
-
-
-
-
+    }
+  });
+  
+  
 
 app.use(express.static(path.join(__dirname, '/price-hunter/build')));
 
@@ -595,3 +626,56 @@ app.use((err, req, res, next) => {
     message,
   });
 });
+
+
+// import express from 'express';
+// import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+// import userRouter from './routes/user.route.js';
+// import authRouter from './routes/auth.route.js';
+// import listingRouter from './routes/listing.route.js';
+// import cookieParser from 'cookie-parser';
+// import path from 'path';
+// dotenv.config();
+
+// mongoose
+//   .connect('mongodb://localhost:27017')
+//   .then(() => {
+//     console.log('Connected to MongoDB!');
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
+
+//   const __dirname = path.resolve();
+
+// const app = express();
+
+// app.use(express.json());
+
+// app.use(cookieParser());
+
+// app.listen(3000, () => {
+//   console.log('Server is running on port 3000!');
+// });
+
+// app.use('/api/user', userRouter);
+// app.use('/api/auth', authRouter);
+// app.use('/api/listing', listingRouter);
+
+
+// app.use(express.static(path.join(__dirname, '/client/dist')));
+
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+// })
+
+// app.use((err, req, res, next) => {
+//   const statusCode = err.statusCode || 500;
+//   const message = err.message || 'Internal Server Error';
+//   return res.status(statusCode).json({
+//     success: false,
+//     statusCode,
+//     message,
+//   });
+// });
