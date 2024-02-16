@@ -1093,6 +1093,10 @@ section.padding-60 {
   transition: all .3s ease-in-out
 }
 
+button.btn-primary {
+  color:white!important;
+}
+
 .btn i {
   margin-right: 10px;
   vertical-align: middle

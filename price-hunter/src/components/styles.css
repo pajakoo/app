@@ -106,7 +106,7 @@ video {
   position: relative;
   background-color: #fff;
   width: 500px;
-  height: 200px;
+  min-height: 200px;
   border: 1px solid rgb(179, 179, 179);
   border-radius: 15px;
   overflow: hidden;
@@ -151,4 +151,9 @@ video {
 
 .pajak-modal .pajak-body {
   padding: 20px;
+}
+
+
+#productTypeahead, #storeTypeahead {
+  transform: translate3d(0px, 40px, 0px)!important;
 }

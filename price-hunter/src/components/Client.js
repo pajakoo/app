@@ -54,6 +54,7 @@ function Client() {
   const [selectedProduct1, setSelectedProduct1] = useState(null);
   const { user, login } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
 
   const [name, setName] = useState('');
   const typeaheadRef = useRef(null);
@@ -358,12 +359,11 @@ function Client() {
         mapContainerStyle={{ width: '100%', height: '400px' }}
         center={selectedStoreLocation ? { lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude } : { lat: 0, lng: 0 }}
         zoom={18}
-      >
-        {isOpen && selectedStoreLocation && (
-          <InfoWindow position={{ lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude }} disableAutoClose={true}>
-            <h3>{selectedStoreLocation.store}</h3>
-          </InfoWindow>
-        )}
+      >        {isOpen && selectedStoreLocation && (
+        <InfoWindow position={{ lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude }} disableAutoClose={true}>
+          <h3>{selectedStoreLocation.store}</h3>
+        </InfoWindow>
+      )}
       </GoogleMap>
     );
   };
@@ -381,10 +381,13 @@ function Client() {
             placeholder="Име на списъка"
           />
     
-    </>)}} onConfirmButtonClick={handleSaveList} onCloseButtonClick={toggleShowModal} />
+    </>)}} onConfirmButtonClick={handleSaveList} onCloseButtonClick={ toggleShowModal} />
+    <Modal show={showModal2} content={()=>{return (<>
+      Добавете 1 продукт за да отключите възможността да ползвате приложението
+    </>)}} onConfirmButtonClick={ () => {  navigate('/admin'); } } onCloseButtonClick={() => toggleShowModal(showModal2)} />
 
       <h4 className="mt-4">Списък за пазаруване</h4>
-      <div className="mb-3 col-md-4">
+      <div className="mb-3 flex-wrap">
         {suggestedProducts.length > 0 && (
           <Typeahead
           ref={typeaheadRef} 
@@ -398,10 +401,10 @@ function Client() {
       </div>
       <div className="mb-3 d-flex flex-wrap">
       {/* disabled={!user} */}
-        <button className="btn btn-primary mb-2 w-50"  onClick={toggleShowModal}>
+        <button className="btn btn-primary mb-2  col-sm-12" onClick={toggleShowModal} >
           <FontAwesomeIcon icon={faSave} /> Запази списъка
         </button>  
-        <button className="btn btn-primary mb-2 w-50" onClick={handleFindCheapest}>
+        <button className="btn btn-primary mb-2 col-sm-12 " onClick={handleFindCheapest}>
           <FontAwesomeIcon icon={faSearch} /> Намери най-евтино
         </button>
       </div>
@@ -415,7 +418,7 @@ function Client() {
             {product.name}
             <div className="d-flex">
               <button
-                className={`btn btn-sm btn-default ${
+                className={`btn btn-sm ${
                   product.isChartButtonActive ? 'active' : ''
                 }`}
                 onClick={() => handleChartProductClick(product)}
@@ -423,7 +426,7 @@ function Client() {
                 <FontAwesomeIcon icon={faLineChart} />
               </button>
               <button
-                className="btn btn-sm btn-danger ms-2"
+                className="btn btn-sm ms-2"
                 onClick={() => handleRemoveProduct(product)}
               >
                 <FontAwesomeIcon icon={faTrashAlt} />
@@ -465,14 +468,14 @@ function Client() {
                   </b>
                 </div>
                 <button
-                className={`btn btn-sm btn-default ${
+                className={`btn btn-sm  ${
                   store.isChartButtonActive ? 'active' : ''
                 }`}
                 onClick={() => handleChartStoreClick(store)}
               >
                 <FontAwesomeIcon icon={faLineChart} />
               </button>
-              <button className={`btn btn-sm btn-default`} onClick={() => handleStoreClick(store)}>
+              <button className={`btn btn-sm `} onClick={() => handleStoreClick(store)}>
                 <FontAwesomeIcon icon={faLocationArrow} /></button>
               </li>
             ))}

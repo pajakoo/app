@@ -47,11 +47,12 @@ let deferredPrompt;
 
 
 function App() {
+  const mobileWidth = 991;
   const [isOpen, setIsOpen] = useState(true);
   const { user, login, logout, checkIfUserIsLoggedIn } = useAuth();
   const [toggleHeader, setToggleHeader] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= mobileWidth);
 
 
   const debounce = (func, delay) => {
@@ -64,13 +65,13 @@ function App() {
     };
   };
   const checkUserRights = (roles) => {
-    return true;
-    // return user && user.roles.includes(roles);
+    //return true;
+    return user && user.roles.includes(roles);
   };
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= mobileWidth);
     };
 
     const debouncedHandleResize = debounce(handleResize, 200); // Adjust the delay as needed
@@ -201,8 +202,8 @@ function App() {
         <main className={toggleHeader ? "content float-lg-end  push" :  "content float-lg-end"}>
         <Routes>
           <Route element={<Client />} path="/" />
-          <Route element={<Admin />} path="/admin" />
           <Route element={<PrivateRoutes />}>
+            <Route element={<Admin />} path="/admin" />
             <Route element={<UserManagement />} path="/users" />
             <Route element={<UserLists />} path="/user-lists" />
           </Route>

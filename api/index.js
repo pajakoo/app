@@ -191,16 +191,9 @@ app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
 
 app.delete('/api/products/:id', async (req, res) => {
   const productId = req.params.id;
- 
   try {
-      const db = client.db('ShoppingApp');
-
-      // Delete the product
-      await db.collection('products').deleteOne({ _id: new Types.ObjectId(productId) });
-
-      // Delete the associated price
-      await db.collection('prices').deleteOne({ product: new Types.ObjectId(productId) });
-
+      await Product.deleteOne({ _id: new Types.ObjectId(productId) });
+      await Price.deleteOne({ product: new Types.ObjectId(productId) });
       res.json({ message: 'Продуктът и свързаната цена са изтрити успешно' });
   } catch (error) {
       console.error('Грешка при изтриване на продукта и цената:', error);
@@ -211,7 +204,7 @@ app.delete('/api/products/:id', async (req, res) => {
 app.get('/api/products/:barcode', async (req, res) => {
  
   try {
-      const product = await db.collection('products').findOne({ barcode: req.params.barcode });
+      const product = await Product.findOne({ barcode: req.params.barcode });
 
       if (!product) {
           return res.status(404).json({ message: 'Продуктът не е намерен' });
@@ -241,8 +234,7 @@ app.get('/api/stores', async (req, res) => {
 });
 
 app.post('/api/products', async (req, res) => {
-    const { barcode, name, price, store, location } = req.body;
-    const addedBy = '65b57567c5d84dd73354ac84';  // Assuming user information is available in req.user
+    const { barcode, name, price, store, location, userId } = req.body;
 
     try {
         // Check if the store exists
@@ -292,7 +284,7 @@ app.post('/api/products', async (req, res) => {
                 price,
                 store: existingStore._id,
                 location,
-                addedBy:new Types.Types.ObjectId(addedBy) // Use Mongoose.Types.Types.ObjectId to create Types.ObjectId
+                addedBy:new Types.ObjectId(userId) // Use Mongoose.Types.Types.ObjectId to create Types.ObjectId
             });
 
             await newProduct.save();
@@ -315,60 +307,71 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-app.get('/api/products', async (req, res) => {
  
-  try {
-      const products = await Product.aggregate([
-          {
-              $lookup: {
-                  from: 'prices',
-                  localField: '_id',
-                  foreignField: 'product',
-                  as: 'priceData'
-              }
-          },
-          {
-              $unwind: {
-                  path: '$priceData',
-                  preserveNullAndEmptyArrays: true
-              }
-          },
-          {
-              $lookup: {
-                  from: 'stores',
-                  localField: 'store',
-                  foreignField: '_id',
-                  as: 'storeData'
-              }
-          },
-          {
-              $unwind: {
-                  path: '$storeData',
-                  preserveNullAndEmptyArrays: true
-              }
-          },
-          {
-              $project: {
-                  _id: 1,
-                  barcode: 1,
-                  name: 1,
-                  location: 1,
-                  store: '$storeData.name',
-                  price: {
-                      $ifNull: ['$priceData.price', '$price']
-                  },
-                  date: {
-                      $ifNull: ['$priceData.date', null]
-                  }
-              }
-          }
-      ]).exec();
-      res.json(products);
-  } catch (err) {
-      console.error('Грешка при търсене на продуктите', err);
-      res.status(500).json({ error: 'Възникна грешка' });
-  } 
+
+app.get('/api/products', async (req, res) => {
+    const { addedBy } = req.query;
+    
+    try {
+        const products = await Product.aggregate([
+            {
+                $match: { addedBy: new Types.ObjectId(addedBy)  }
+            },
+            {
+                $lookup: {
+                    from: 'prices',
+                    localField: '_id',
+                    foreignField: 'product',
+                    as: 'priceData'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$priceData',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'stores',
+                    localField: 'store',
+                    foreignField: '_id',
+                    as: 'storeData'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$storeData',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    barcode: 1,
+                    name: 1,
+                    location: 1,
+                    store: '$storeData.name',
+                    price: {
+                        $ifNull: ['$priceData.price', '$price']
+                    },
+                    date: {
+                        $ifNull: ['$priceData.date', null]
+                    }
+                }
+            }
+        ]).exec();
+
+        res.json(products);
+    } catch (err) {
+        console.error('Error fetching products:', err);
+        res.status(500).json({ error: 'An error occurred' });
+    }
 });
+
+  
+
+  
 
 app.get('/api/product/:barcode/history', async (req, res) => {
     const { barcode } = req.params;
@@ -480,6 +483,103 @@ app.post('/api/cheapest', async (req, res) => {
     }
 });
 
+
+//TODO user sorts the products by priority
+// app.post('/api/cheapest', async (req, res) => {
+//     const productList = req.body;
+  
+//     try {
+//       // Store missing products for each store
+//       const missingProductsByStore = {};
+  
+//       // Find stores with matching products, regardless of quantity
+//       const stores = await Store.aggregate([
+//         {
+//           $lookup: {
+//             from: 'products',
+//             localField: '_id',
+//             foreignField: 'store',
+//             as: 'products',
+//           },
+//         },
+//         {
+//           $match: {
+//             'products.name': {
+//               $in: productList.map((product) => product.name),
+//             },
+//           },
+//         },
+//         {
+//           $addFields: {
+//             products: {
+//               $filter: {
+//                 input: '$products',
+//                 cond: { $in: ['$$this.name', productList.map((product) => product.name)] },
+//               },
+//             },
+//           },
+//         },
+//       ]).exec();
+  
+//       // Find prices for products in the list, sorted by date
+//       const prices = await Price
+//         .find({
+//           product: {
+//             $in: productList.map((product) => product.id),
+//           },
+//         })
+//         .sort({ date: -1 })
+//         .exec();
+  
+//       // Group prices by store and get the latest date for each store
+//       const groupedPrices = {};
+//       prices.forEach((price) => {
+//         const storeId = price.store.toString();
+//         if (!groupedPrices[storeId] || price.date > groupedPrices[storeId].date) {
+//           groupedPrices[storeId] = price;
+//         }
+//       });
+  
+//       // Calculate total prices, track missing products per store, and build response
+//       const storePrices = stores.map((store) => {
+//         const storeProducts = store.products;
+//         const price = groupedPrices[store._id.toString()];
+//         const productPrices = price ? price.prices : [];
+//         const totalPrice = productList.reduce((acc, product) => {
+//           const storeProduct = storeProducts.find((p) => p.name === product.name);
+//           const productPrice = productPrices.find((p) => p.product.toString() === product.id.toString());
+//           const priceValue = productPrice ? productPrice.price : storeProduct ? storeProduct.price : 0;
+//           if (!priceValue) {
+//             // Add missing product details to relevant store's array
+//             if (!missingProductsByStore[store._id]) {
+//               missingProductsByStore[store._id] = [];
+//             }
+//             missingProductsByStore[store._id].push(product);
+//           }
+//           return acc + Number(priceValue);
+//         }, 0);
+  
+//         return {
+//           storeId: store._id,
+//           store: store.name,
+//           latitude: store.location.lat,
+//           longitude: store.location.lng,
+//           totalPrice,
+//           missingProducts: missingProductsByStore[store._id] || [],
+//         };
+//       });
+  
+//       // Sort store prices by total price
+//       storePrices.sort((a, b) => a.totalPrice - b.totalPrice);
+  
+//       // Send response with store prices and missing products for each store
+//       res.json({ storePrices });
+//     } catch (error) {
+//       console.error('Error finding the cheapest prices:', error);
+//       res.status(500).json({ error: 'An error occurred while finding the cheapest prices' });
+//     }
+//   });
+
 app.get('/api/users', async (req, res) => {
  
   try {
@@ -584,9 +684,10 @@ app.get('/api/shopping-lists/:userId', async (req, res) => {
           if (productDetails) {
             // Include product details in the productList array
             productList.push({
-              name: productDetails.name,
-              quantity: product.quantity,
-              // Include other product details if needed
+                productId:productDetails._id,
+                name: productDetails.name,
+                quantity: product.quantity,
+                //Include other product details if needed
             });
           }
         }
