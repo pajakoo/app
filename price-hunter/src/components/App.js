@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 
 //cmd+K+cmd+0 folding functions ( unfold  cmd+K +cmd+J )
@@ -53,7 +53,7 @@ function App() {
   const [toggleHeader, setToggleHeader] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= mobileWidth);
-
+  const navigate = useNavigate();
 
   const debounce = (func, delay) => {
     let timeoutId;
@@ -67,8 +67,8 @@ function App() {
   const checkUserRights = (roles) => {
     //return true;
     return user && user.roles.includes(roles);
-  };
-
+  }; 
+ 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= mobileWidth);
@@ -194,7 +194,7 @@ function App() {
         <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
           <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span>
-          <div className="image-holder float-end">
+          <div className="image-holder float-end" onClick={()=>{  navigate('/login');}}>
           { user && !imageError && <img src={user.avatar} alt={user.displayname} onError={() => setImageError(true)} />} 
           </div>  
         </div>
