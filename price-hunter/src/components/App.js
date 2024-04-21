@@ -85,7 +85,7 @@ function App() {
   }, []);
   
   const handleToggle = () => {
-    console.log(isMobile);
+    // console.log(isMobile);
     if (isMobile) {
       setToggleHeader(!toggleHeader);
     }
@@ -202,8 +202,8 @@ function App() {
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Client />} path="/client" />
-            <Route element={<Admin />} path="/admin" />
           <Route element={<PrivateRoutes />}>
+            <Route element={<Admin />} path="/admin" />
             <Route element={<UserManagement />} path="/users" />
             <Route element={<UserLists />} path="/user-lists" />
           </Route>

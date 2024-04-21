@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import GoogleMapReact from 'google-map-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -25,9 +26,13 @@ function Admin() {
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [videoDevices, setVideoDevices] = useState([]);
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;
+  const navigate = useNavigate();
 
   useEffect(() => {
     // uncomment here
+
+    if(!user) navigate('/login');
+
     fetch(`${url}/api/products?addedBy=${user._id}`)
       .then((response) => response.json())
       .then((data) => setProducts(data))
@@ -210,6 +215,13 @@ function Admin() {
             onClick={handleNameFieldClick}
             placeholder="Име"
           />
+           <input
+            type="number"
+            className="form-control"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Цена"
+          />
           <Typeahead
             id="storeTypeahead"
             options={stores}
@@ -242,13 +254,7 @@ function Admin() {
                   </div>
                 )}
           />
-          <input
-            type="number"
-            className="form-control"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Цена"
-          />
+         
           <div className="d-flex justify-content-end">
             <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
           </div>

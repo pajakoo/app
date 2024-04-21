@@ -144,19 +144,6 @@ function Client() {
     }
   }, []);
 
-  useEffect( () => {
-    fetchShoppingListsCarousel();
-  },[])
-
-  const fetchShoppingListsCarousel = async () => {
-    try {
-      const response = await axios.get(`${url}/api/shopping-lists/first-three`);
-      setShoppingListsCarousel(response.data);
-    } catch (error) {
-      console.error('Error fetching shopping lists:', error);
-    }
-  };
-
   useEffect(() => {
   
     if (isProductSelected && isStoreSelected && selectedProduct) {
@@ -488,7 +475,7 @@ function Client() {
       {chartDataConfig.labels.length  > 0  && (
 
       <div className="mb-4">
-        <div class="paragraph"> 
+        <div className="paragraph"> 
       Графика с история на цената за избрания продукт, събирана до момента от всички магазини.
 </div>
         {chartDataConfig.labels.length > 0 && <Line ref={(chart) => setChartInstance(chart)} options={{

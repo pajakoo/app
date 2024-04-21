@@ -13,7 +13,7 @@ const Modal = ({ show, onConfirmButtonClick, onCloseButtonClick, content }) => {
         </div>
         <div className="pajak-footer">
           <button className="btn btn-primary ms-3" onClick={onConfirmButtonClick}>Потвърди</button>
-          <button  class=" btn-pajak" onClick={onCloseButtonClick}>Откажи</button>
+          <button  className=" btn-pajak" onClick={onCloseButtonClick}>Откажи</button>
         </div>
       </div>
     </div>
