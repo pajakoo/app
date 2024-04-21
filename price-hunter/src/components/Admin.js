@@ -27,6 +27,7 @@ function Admin() {
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;
 
   useEffect(() => {
+    // uncomment here
     fetch(`${url}/api/products?addedBy=${user._id}`)
       .then((response) => response.json())
       .then((data) => setProducts(data))
@@ -43,6 +44,7 @@ function Admin() {
         console.error('Error:', error);
       });
 
+      // uncomment here
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       const videoDevices = devices.filter((device) => device.kind === 'videoinput');
       setVideoDevices(videoDevices);
@@ -58,7 +60,7 @@ function Admin() {
       }
     );
   }, []);
-
+// uncomment here
   useEffect(() => {
     if (selectedCamera) {
       codeReader.current = new BrowserMultiFormatReader();
@@ -139,6 +141,8 @@ function Admin() {
         setStores([...stores, newStoreData]);
       }
 
+      console.log(store,newStoreName );
+
       const response = await fetch(`${url}/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,8 +154,9 @@ function Admin() {
         return;
       }
 
-      const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
-      setProducts(productsData);
+      // uncomment here
+      // const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
+      // setProducts(productsData);
       setBarcode('');
       setName('');
       setPrice('');
@@ -173,8 +178,9 @@ function Admin() {
         return;
       }
 
-      const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
-      setProducts(productsData);
+      // uncomment here
+      // const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
+      // setProducts(productsData);
     } catch (error) {
       console.error('Грешка при изпращане на заявката', error);
     }
@@ -185,7 +191,7 @@ function Admin() {
   };
 
   return (
-    <section className="shadow-blue white-bg padding">
+    <section className="shadow-blue white-bg padding section-min-hight-620">
       <h4 className="mt-4">Добави продукт по баркод</h4>
       <div className="mb-3">
         <div className="mb-3">
@@ -210,21 +216,25 @@ function Admin() {
             labelKey="name"
             placeholder="Магазин"
             selected={store ? [store] : []}
-            onChange={handleInputChange}
+            onChange={ handleInputChange}
             renderInput={({ inputRef, referenceElementRef, ...props }) => (
                   <div className="input-group">
                     <input
                       {...props}
+                      ref={(ref) => {
+                        inputRef(ref);
+                        inputRef.current = ref; // Assign the ref to inputRef.current
+                      }}
                       className="form-control"
+                      onBlur={(e)=>{setNewStoreName(e.target.value);}} // Attach onBlur event handler
                     />
-                   
                     {store && (
                       <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="btn "
-                          onClick={handleClearStore}
-                        >
+                            <button
+                              type="button"
+                              className="btn "
+                              onClick={handleClearStore}
+                            >
                           <span aria-hidden="true">&times;</span>
                         </button>
                       </div>
@@ -245,6 +255,7 @@ function Admin() {
         </div>
         <h4>Добавени от мен продукти</h4>
 
+{/* // uncomment here */}
         <ul className="list-group">
           {products.map((product, index) => (
             <li className="list-group-item" key={index}>

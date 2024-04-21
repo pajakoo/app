@@ -5,6 +5,8 @@ import styled from 'styled-components';
 //cmd+K+cmd+0 folding functions ( unfold  cmd+K +cmd+J )
 // Components
 import Client from './Client';
+import CreateList from './CreateList';
+import Home from './Home';
 import Admin from './Admin';
 import UserManagement from './UserManagement';
 import UserLists from './UserLists';
@@ -65,8 +67,7 @@ function App() {
     };
   };
   const checkUserRights = (roles) => {
-    //return true;
-    return user && user.roles.includes(roles);
+    return  user && roles.split(',').includes(user.roles[0]);
   }; 
  
   useEffect(() => {
@@ -136,6 +137,11 @@ function App() {
               <ul className="navbar-nav">
               <li className="nav-item">
                 <Link className="nav-link" to="/" onClick={handleToggle}>
+                  Препоръчани списъци
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/client" onClick={handleToggle}>
                   Разгледай продути
                 </Link>
               </li>
@@ -149,7 +155,7 @@ function App() {
                   Мойте запазени списъци
                 </Link>
               </li>
-              { checkUserRights('65660572e8d841f79b8fe614') && (
+              { checkUserRights('65660572e8d841f79b8fe614,65660583e8d841f79b8fe615') && (
                 <li className="nav-item">
                   <Link className="nav-link" to="/users" onClick={handleToggle}>
                     Права
@@ -191,7 +197,22 @@ function App() {
           </div>
         </header>
 
-        <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
+        
+        <main className={toggleHeader ? "content float-lg-end  push" :  "content float-lg-end"}>
+        <Routes>
+          <Route element={<Home />} path="/" />
+          <Route element={<Client />} path="/client" />
+            <Route element={<Admin />} path="/admin" />
+          <Route element={<PrivateRoutes />}>
+            <Route element={<UserManagement />} path="/users" />
+            <Route element={<UserLists />} path="/user-lists" />
+          </Route>
+          {!user && <Route element={<Login />} path="/login" />}
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </main>
+
+      <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
           <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span>
           <div className="image-holder float-end" onClick={()=>{  navigate('/login');}}>
@@ -199,19 +220,7 @@ function App() {
           </div>  
         </div>
         
-        <main className={toggleHeader ? "content float-lg-end  push" :  "content float-lg-end"}>
-        <Routes>
-          <Route element={<Client />} path="/" />
-          <Route element={<PrivateRoutes />}>
-            <Route element={<Admin />} path="/admin" />
-            <Route element={<UserManagement />} path="/users" />
-            <Route element={<UserLists />} path="/user-lists" />
-          </Route>
-          {!user && <Route element={<Login />} path="/login" />}
-          <Route path="*" element={<Client />} />
-        </Routes>
-      </main>
-
+        
     </div>
   );
 }

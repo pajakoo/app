@@ -7,6 +7,11 @@ html, body {
   }
 }
 
+.hidden {
+  display:none;
+}
+
+
 
 .App {
   text-align: center;
@@ -1196,7 +1201,7 @@ button.btn-primary {
 }
 
 .btn-sm {
-  padding: 17px 16px
+  padding: 10px 10px
 }
 
 .btn-sm,.btn-xs {
@@ -1298,7 +1303,7 @@ button.btn-primary {
 }
 
 .form-control:focus {
-  border-color: #ff5959;
+  border-color: dimgray;
   outline: 0;
   box-shadow: none
 }

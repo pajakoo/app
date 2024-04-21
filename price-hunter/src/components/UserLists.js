@@ -35,6 +35,28 @@ const UserLists = () => {
     }
   };
 
+  const handleDeleteList = async (listId) => {
+    try {
+      const response = await fetch(`${url}/api/shopping-lists/${listId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        console.error('Грешка при изтриване на листата');
+        return;
+      }
+
+      // uncomment here
+      // const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
+      // setProducts(productsData);
+    } catch (error) {
+      console.error('Грешка при изпращане на заявката', error);
+    }
+  };
+
+
+  
+
   if (loading) {
     return  (<section className="shadow-blue white-bg padding">
     <h4 className="mt-4">Запазени Списъци </h4>
@@ -48,10 +70,12 @@ const UserLists = () => {
         {shoppingLists.length > 0 ? (
           <Row xs={1} md={2} lg={3} className="g-4">
             {shoppingLists.map((list) => (
-              <Col key={list._id}>
+              <Col key={list._id} >
                 <Card>
                   <Card.Body>
-                    <Card.Title>{list.listName}</Card.Title>
+                    <Card.Title>{list.listName}</Card.Title><button className="btn btn-link" onClick={() => handleDeleteList(list.listId)}>
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
                     {/* <Card.Subtitle className="mb-2 text-muted">User ID: {list.userId}</Card.Subtitle> */}
                     <ul>
                       {list.products.map((product) => (

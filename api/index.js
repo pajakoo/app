@@ -48,6 +48,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 
 
+
 // API endpoint to update a shopping list
 app.put('/api/shopping-lists/:listId', async (req, res) => {
   const { listId } = req.params;
@@ -67,25 +68,93 @@ app.put('/api/shopping-lists/:listId', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
   } 
 });
-
-// API endpoint to delete a shopping list
+// API endpoint to delete a shopping list by ID
 app.delete('/api/shopping-lists/:listId', async (req, res) => {
-  const { listId } = req.params;
- 
-
-  try {
-      const result = await db.collection('shoppingLists').deleteOne({ _id: new Types.ObjectId(listId) });
-
+    const { listId } = req.params;
+  
+    try {
+      // Delete the shopping list using ShoppingList model
+      const result = await ShoppingList.deleteOne({ _id: new Types.ObjectId(listId) });
+  
       if (result.deletedCount > 0) {
-          res.json({ message: 'Shopping list deleted successfully' });
+        // Shopping list deleted successfully
+        res.json({ message: 'Shopping list deleted successfully' });
       } else {
-          res.status(404).json({ error: 'Shopping list not found' });
+        // Shopping list not found with the given ID
+        res.status(404).json({ error: 'Shopping list not found' });
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error deleting shopping list:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-  } 
+    }
+  });
+
+// API endpoint to get all shopping lists
+app.get('/api/shopping-lists', async (req, res) => {
+    try {
+        // Fetch all shopping lists from the database
+        const allShoppingLists = await ShoppingList.find({}).exec();
+        // Return the array of shopping lists
+        res.json(allShoppingLists);
+    } catch (error) {
+        console.error('Error fetching shopping lists:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
+
+ 
+
+app.get('/api/shopping-lists/random', async (req, res) => {
+    try {
+        // Fetch random shopping lists from the database
+        const randomLists = await ShoppingList.aggregate([
+            { $sample: { size: 3 } } // Get 3 random documents
+        ]);
+
+        // Create an array to store the random shopping list details with product names
+        const randomShoppingLists = [];
+
+        // Loop through each random shopping list
+        for (const list of randomLists) {
+            const productList = [];
+
+            // Loop through each product in the shopping list
+            for (const product of list.products) {
+                if (product.productId) {
+                    // Fetch product details in the productList array
+                    const productDetails = await Product.findById(product.productId);
+                    if (productDetails) {
+                        productList.push({
+                            productId: productDetails._id,
+                            name: productDetails.name,
+                            quantity: product.quantity,
+                            // Include other product details if needed
+                        });
+                    }
+                }
+            }
+
+            // Include random shopping list details with product names in the response
+            randomShoppingLists.push({
+                listId: list._id,
+                products: productList,
+                listName: list.listName,
+                createdAt: list.createdAt,
+                updatedAt: list.updatedAt,
+                // Include other shopping list details if needed
+            });
+        }
+
+        res.json(randomShoppingLists);
+    } catch (error) {
+        console.error('Error fetching random shopping lists:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+  
+
+
 
 
 app.get('/api/products-client', async (req, res) => {

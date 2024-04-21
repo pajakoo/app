@@ -12,6 +12,19 @@ import Modal from "../components/Modal"
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import 'chartjs-adapter-moment';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+
+import './styles.css';
+
+// import required modules
+import { Parallax, Pagination, Navigation } from 'swiper/modules';
+
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -38,6 +51,7 @@ ChartJS.register(
 
 function Client() {
   const [inputValue, setInputValue] = useState('');
+  const [shoppingListsCarousel, setShoppingListsCarousel] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
   const [stores, setStores] = useState([]);
   const [cheapestStores, setCheapestStores] = useState([]);
@@ -54,6 +68,7 @@ function Client() {
   const [selectedProduct1, setSelectedProduct1] = useState(null);
   const { user, login } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
   const [name, setName] = useState('');
@@ -118,7 +133,7 @@ function Client() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setSelectedStoreLocation({ latitude, longitude });
+          // setSelectedStoreLocation({ latitude, longitude });
         },
         (error) => {
           console.error('Error getting current location:', error);
@@ -129,8 +144,21 @@ function Client() {
     }
   }, []);
 
-  useEffect(() => {
+  useEffect( () => {
+    fetchShoppingListsCarousel();
+  },[])
 
+  const fetchShoppingListsCarousel = async () => {
+    try {
+      const response = await axios.get(`${url}/api/shopping-lists/first-three`);
+      setShoppingListsCarousel(response.data);
+    } catch (error) {
+      console.error('Error fetching shopping lists:', error);
+    }
+  };
+
+  useEffect(() => {
+  
     if (isProductSelected && isStoreSelected && selectedProduct) {
     console.log('pajak:', selectedProduct.barcode , selectedStore.storeId );
 
@@ -142,6 +170,7 @@ function Client() {
   
 
   useEffect(() => {
+    // console.log('pajak',selectedStoreLocation)
     if (Object.keys(productPriceHistories).length > 0) {
       createChart();
     }
@@ -175,9 +204,9 @@ function Client() {
   const handleInputChange = (selected) => {
     const inputElement = typeaheadRef.current?.inputNode; // Access the inputNode of the Typeahead component
     inputElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (inputElement) {
-      inputElement.readOnly = true;
-    }
+    // if (inputElement) {
+    //   inputElement.readOnly = true;
+    // }
 
     if (selected && selected.length > 0) {
       const selectedProduct1 = selected[0];
@@ -192,15 +221,17 @@ function Client() {
 
   const handleRemoveProduct = (product) => {
     setShoppingList((prevList) => prevList.filter((p) => p._id !== product._id));
+    if ( cheapestStores.length < 1) setShowMap(false);
     setProductPriceHistories((prevHistories) => {
       const updatedHistories = { ...prevHistories };
       delete updatedHistories[product._id];
       return updatedHistories;
     });
+    setChartDataConfig({labels:[]});
   };
 
   const handleSaveList = async () => {
-    console.log('pppp',user);
+    // console.log('pppp',user);
     try {
       // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
       const response = await axios.post(`${url}/api/shopping-lists`, {
@@ -243,6 +274,8 @@ function Client() {
         }
       });
       setCheapestStores(response.data);
+      setShowMap(true);
+
     } catch (error) {
       console.error('Error:', error);
     }
@@ -354,7 +387,7 @@ function Client() {
       return <div>Loading...</div>;
     }
 
-    return (
+    return ( 
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '400px' }}
         center={selectedStoreLocation ? { lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude } : { lat: 0, lng: 0 }}
@@ -364,14 +397,14 @@ function Client() {
           <h3>{selectedStoreLocation.store}</h3>
         </InfoWindow>
       )}
-      </GoogleMap>
-    );
+      </GoogleMap>) 
   };
  
   return (
     <>
+    
      {/* {!user && <Login />  } */}
-    <section className="shadow-blue white-bg padding">
+    <section className="shadow-blue white-bg padding section-min-hight-420">
     <Modal show={showModal} content={()=>{return (<>
       <input
             type="text"
@@ -387,38 +420,43 @@ function Client() {
     </>)}} onConfirmButtonClick={ () => {  navigate('/admin'); } } onCloseButtonClick={() => toggleShowModal(showModal2)} />
 
       <h4 className="mt-4">Списък за пазаруване</h4>
-      <div className="mb-3 flex-wrap">
+      <div className="mb-3 flex-wrap ">
         {suggestedProducts.length > 0 && (
           <Typeahead
-          ref={typeaheadRef} 
+            placeholder='Въведете имепродукт'
+            ref={typeaheadRef} 
             id="productTypeahead"
             options={suggestedProducts}
             labelKey={(option) => option.name}
             onChange={handleInputChange}
+            emptyLabel="Няма намерени продукти."
             selected={inputValue ? [inputValue] : []}
           />
         )}
       </div>
+
+      {shoppingList.length > 0 && (<>
       <div className="mb-3 d-flex flex-wrap">
       {/* disabled={!user} */}
-        <button className="btn btn-primary mb-2  col-sm-12" onClick={toggleShowModal} >
+        {/* <button className="btn" onClick={toggleShowModal} >
           <FontAwesomeIcon icon={faSave} /> Запази списъка
-        </button>  
-        <button className="btn btn-primary mb-2 col-sm-12 " onClick={handleFindCheapest}>
-          <FontAwesomeIcon icon={faSearch} /> Намери най-евтино
-        </button>
+        </button>   */}
+        {/* <button className="btn" onClick={handleFindCheapest}>
+          <FontAwesomeIcon icon={faSearch} /> 
+        </button> */}
       </div>
 
-      <ul className="list-group mb-4">
+      <ul className="pajak-list mb-4">
+
         {shoppingList.map((product) => (
           <li
             key={product._id}
-            className={`list-group-item d-flex justify-content-between align-items-center`}
+            className={` d-flex justify-content-between align-items-center`}
           >
             {product.name}
             <div className="d-flex">
               <button
-                className={`btn btn-sm ${
+                className={`btn btn-sm my-2 ${
                   product.isChartButtonActive ? 'active' : ''
                 }`}
                 onClick={() => handleChartProductClick(product)}
@@ -426,7 +464,7 @@ function Client() {
                 <FontAwesomeIcon icon={faLineChart} />
               </button>
               <button
-                className="btn btn-sm ms-2"
+                className="btn btn-sm my-2"
                 onClick={() => handleRemoveProduct(product)}
               >
                 <FontAwesomeIcon icon={faTrashAlt} />
@@ -435,8 +473,24 @@ function Client() {
           </li>
         ))}
       </ul>
+      <div className="mb-3 d-flex justify-content-end">
+  <button className="btn btn-pajak  " onClick={toggleShowModal}>
+    <FontAwesomeIcon icon={faSave} /> Запази списъка
+  </button>  
+</div>
 
-      {chartDataConfig !== null && (<div className="mb-4">
+
+      </>)}
+
+
+      {/* -{chartDataConfig != null ?  "true" : "false"}+ */}
+
+      {chartDataConfig.labels.length  > 0  && (
+
+      <div className="mb-4">
+        <div class="paragraph"> 
+      Графика с история на цената за избрания продукт, събирана до момента от всички магазини.
+</div>
         {chartDataConfig.labels.length > 0 && <Line ref={(chart) => setChartInstance(chart)} options={{
             scales: {
                 y: {
@@ -452,7 +506,7 @@ function Client() {
           }} data={chartDataConfig} />}
       </div>)}
 
-      {cheapestStores.length > 0 ? (
+      {/* {cheapestStores.length > 0 ? (
         <div>
           <h4>Най-евтини места за покупка:</h4>
           <ul className="list-group mb-4">
@@ -485,8 +539,11 @@ function Client() {
         <div>
           <p>Няма намерени резултати.</p>
         </div>
-      )}
+      )} */}
+      <span>{ selectedStoreLocation ? selectedStoreLocation.latitude :''}</span>
+      <div className={showMap ? '' : 'hidden'}>
       {isLoaded && renderMap()}
+      </div>
     </section>
     </>
 
