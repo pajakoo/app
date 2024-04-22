@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from "../components/Modal"
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { DNA } from 'react-loader-spinner'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareAlt, faLineChart, faLocationArrow } from '@fortawesome/free-solid-svg-icons';
@@ -24,6 +25,7 @@ function Home() {
   const [selectedStoreLocation, setSelectedStoreLocation] = useState(null);
   const [cheapestStores, setCheapestStores] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showPreloader, setShowPreloader] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);
   
@@ -38,9 +40,11 @@ function Home() {
   };
 
   const fetchShoppingListsCarousel = async () => {
+    setShowPreloader(true);
     try {
       const response = await axios.get(`${url}/api/shopping-lists/random`);
       setShoppingListsCarousel(response.data);
+      setShowPreloader(false);
     } catch (error) {
       console.error('Error fetching shopping lists:', error);
     }
@@ -83,7 +87,16 @@ function Home() {
     <>
       <section>
         {/* <h4>Идеи за покупки</h4> */}
-        <Swiper
+        <DNA
+          visible={showPreloader}
+          height="80"
+          width="80"
+          ariaLabel="dna-loading"
+          wrapperStyle={{}}
+          wrapperClass="dna-wrapper"
+          /> 
+          {shoppingListsCarousel.length>0 && (
+          <Swiper
           style={{
             '--swiper-navigation-color': '#fff',
             '--swiper-pagination-color': '#fff',
@@ -165,7 +178,7 @@ function Home() {
             </SwiperSlide>
 
           ))}
-        </Swiper>
+        </Swiper> )}
         <Modal show={showModal} content={() => {
           return (<>
             {cheapestStores.length > 0 ? (

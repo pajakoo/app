@@ -146,19 +146,19 @@ function App() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin" onClick={handleToggle}>
-                  Добави продукти
+                <Link className="nav-link" to="/add" onClick={handleToggle}>
+                  Добави продукт
                 </Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/user-lists" onClick={handleToggle}>
-                  Мойте запазени списъци
+                  Моите запазени списъци
                 </Link>
               </li>
-              { checkUserRights('65660572e8d841f79b8fe614,65660583e8d841f79b8fe615') && (
+              { checkUserRights('65660572e8d841f79b8fe614') && (
                 <li className="nav-item">
                   <Link className="nav-link" to="/users" onClick={handleToggle}>
-                    Права
+                    Права на потребители
                   </Link>
                 </li>
               )}
@@ -203,7 +203,7 @@ function App() {
           <Route element={<Home />} path="/" />
           <Route element={<Client />} path="/client" />
           <Route element={<PrivateRoutes />}>
-            <Route element={<Admin />} path="/admin" />
+            <Route element={<Admin />} path="/add" />
             <Route element={<UserManagement />} path="/users" />
             <Route element={<UserLists />} path="/user-lists" />
           </Route>
