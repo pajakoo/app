@@ -514,3 +514,9 @@ box-shadow: 5px 8px 4px 3px rgba(0, 0, 0, 0.4);;
   font-style:italic;
   padding-right:25%;
 } 
+
+
+.pajak-map > div{
+  position: static!important;
+
+}

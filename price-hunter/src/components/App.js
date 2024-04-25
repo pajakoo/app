@@ -106,10 +106,28 @@ function App() {
     );
   };
 
-  const Logout = () => {
+  const handleLogin = () => {
+    login();
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const LoginButton = ({ handleLogin }) => {
     return (
       <div>
-        <button className="btn btn-link nav-link" onClick={logout}>
+        <button className="btn btn-link nav-link" onClick={handleLogin}>
+          <i className="fa fa-sign-in"></i> Вход
+        </button>
+      </div>
+    );
+  };
+  
+  const LogoutButton = ({ handleLogout }) => {
+    return (
+      <div>
+        <button className="btn btn-link nav-link" onClick={handleLogout}>
           <i className="fa fa-sign-out"></i> Изход
         </button>
       </div>
@@ -162,12 +180,21 @@ function App() {
                   </Link>
                 </li>
               )}
+               <li className="nav-item" onClick={handleToggle}>
+               <div className="site-wrapper">
+      {user ? (
+        <LogoutButton handleLogout={handleLogout} />
+      ) : (
+        <LoginButton handleLogin={handleLogin} />
+      )}
+    </div>
+              </li>
             </ul>
-            <ul className="navbar-nav ms-auto">
+            {/* <ul className="navbar-nav ms-auto">
               <li className="nav-item" onClick={handleToggle}>
                 <Logout /> 
               </li>
-            </ul>
+            </ul> */}
             </nav>
             <div className="footer mt-auto">
               {/* <ul className="social-icons list-inline">
@@ -214,7 +241,7 @@ function App() {
 
       <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
-          <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span>
+          {/* <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span> */}
           <div className="image-holder float-end" onClick={()=>{  navigate('/login');}}>
           { user && !imageError && <img src={user.avatar} alt={user.displayname} onError={() => setImageError(true)} />} 
           </div>  

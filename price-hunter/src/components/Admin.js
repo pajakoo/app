@@ -9,11 +9,13 @@ import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 import { useAuth } from '../AuthProvider';
+import { DNA } from 'react-loader-spinner'
 
 function Admin() {
   const videoRef = useRef(null);
   const codeReader = useRef(null);
   const [barcode, setBarcode] = useState('');
+  const [disabledName, setDisabledName] = useState(false);
   const [store, setStore] = useState(null);
   const [newStoreName, setNewStoreName] = useState('');
   const [name, setName] = useState('');
@@ -27,15 +29,16 @@ function Admin() {
   const [videoDevices, setVideoDevices] = useState([]);
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;
   const navigate = useNavigate();
+  const [showPreloader, setShowPreloader] = useState(false);
 
   useEffect(() => {
     // uncomment here
 
     if(!user) navigate('/login');
-
+    setShowPreloader(true);
     fetch(`${url}/api/products?addedBy=${user._id}`)
       .then((response) => response.json())
-      .then((data) => setProducts(data))
+      .then((data) => {setProducts(data);setShowPreloader(false);})
       .catch((error) => {
         console.error('Error:', error);
       });
@@ -107,6 +110,8 @@ function Admin() {
       if (response.ok) {
         const product = await response.json();
         setName(product.name);
+        if (product.length > 0)setDisabledName(true);
+
       } else {
         console.error('Грешка при извличане на продукта');
       }
@@ -133,6 +138,7 @@ function Admin() {
   const handleAddProduct = async () => {
     try {
       if (store && !stores.some((s) => s.name === store.name)) {
+        setShowPreloader(true);
         const response = await fetch(`${url}/api/stores`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -160,8 +166,9 @@ function Admin() {
       }
 
       // uncomment here
-      // const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
-      // setProducts(productsData);
+      const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
+      setProducts(productsData);
+      setShowPreloader(false);
       setBarcode('');
       setName('');
       setPrice('');
@@ -174,6 +181,7 @@ function Admin() {
 
   const handleDeleteProduct = async (productId) => {
     try {
+      setShowPreloader(true);
       const response = await fetch(`${url}/api/products/${productId}`, {
         method: 'DELETE',
       });
@@ -184,8 +192,9 @@ function Admin() {
       }
 
       // uncomment here
-      // const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
-      // setProducts(productsData);
+      const productsData = await fetch(`${url}/api/products?addedBy=${user._id}`).then((res) => res.json());
+      setProducts(productsData);
+      setShowPreloader(false);
     } catch (error) {
       console.error('Грешка при изпращане на заявката', error);
     }
@@ -204,13 +213,14 @@ function Admin() {
             type="text"
             className="form-control"
             value={barcode}
-            onChange={(e) => setBarcode(e.target.value)}
-            placeholder="Баркод"
+            onChange={(e) => { setBarcode(e.target.value); setDisabledName(false)}}
+            placeholder="Баркод или сериен номер"
           />
           <input
             type="text"
             className="form-control"
             value={name}
+            disabled={disabledName}
             onChange={(e) => setName(e.target.value)}
             onClick={handleNameFieldClick}
             placeholder="Име"
@@ -260,7 +270,14 @@ function Admin() {
           </div>
         </div>
         <h4>Добавени от мен продукти</h4>
-
+        <DNA
+          visible={showPreloader}
+          height="80"
+          width="80"
+          ariaLabel="dna-loading"
+          wrapperStyle={{}}
+          wrapperClass="dna-wrapper"
+          /> 
 {/* // uncomment here */}
         <ul className="list-group">
           {products.map((product, index) => (

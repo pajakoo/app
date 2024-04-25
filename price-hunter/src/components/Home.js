@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from "../components/Modal"
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -6,7 +6,16 @@ import { DNA } from 'react-loader-spinner'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareAlt, faLineChart, faLocationArrow } from '@fortawesome/free-solid-svg-icons';
-import { GoogleMap, Marker, InfoWindow, useLoadScript } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript } from '@react-google-maps/api';
+
+import {
+  APIProvider,
+  Map,
+  InfoWindow,
+  AdvancedMarker,useAdvancedMarkerRef
+} from "@vis.gl/react-google-maps";
+
+
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -28,11 +37,16 @@ function Home() {
   const [showPreloader, setShowPreloader] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);
-  
+  const [markerRef, marker] = useAdvancedMarkerRef();
+  const [infowindowShown, setInfowindowShown] = useState(false);
   useEffect(() => {
     fetchShoppingListsCarousel();
   }, [])
 
+  const toggleInfoWindow = () =>
+  setInfowindowShown(previousState => !previousState);
+
+const closeInfoWindow = () => setInfowindowShown(false);
 
   const toggleShowModal = () => {
     setShowModal(!showModal);
@@ -58,7 +72,6 @@ function Home() {
     setSelectedStoreLocation(store);
     setShowMap(true);
   };
-
   const renderMap = () => {
     if (loadError) {
       return <div>Error loading Google Maps</div>;
@@ -69,6 +82,26 @@ function Home() {
     }
 
     return (
+    // <div className="pajak-map">
+    //   <APIProvider apiKey={process.env.REACT_APP_GOOGLE_API_KEY}>
+    //   <Map controlled={true} zoom={12} center={selectedStoreLocation ? { lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude } : { lat: 0, lng: 0 }} mapId={'shoppyApp'}>
+    //   {selectedStoreLocation && (<AdvancedMarker
+    //       ref={markerRef}
+    //       position={{ lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude }}
+    //       onClick={toggleInfoWindow}
+    //     />)
+    //   }
+
+    //     {infowindowShown && (
+    //       <InfoWindow anchor={marker} onCloseClick={closeInfoWindow}>
+    //        <h3>{selectedStoreLocation.store}</h3>
+    //       </InfoWindow>
+    //     )}
+    //   </Map>
+    // </APIProvider>
+    // </div>
+
+
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '400px' }}
         center={selectedStoreLocation ? { lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude } : { lat: 0, lng: 0 }}
@@ -78,7 +111,8 @@ function Home() {
           <h3>{selectedStoreLocation.store}</h3>
         </InfoWindow>
       )}
-      </GoogleMap>)
+      </GoogleMap>
+      )
   };
 
 
@@ -138,7 +172,7 @@ function Home() {
                   </div>
                   <div className='text-right' id='personBox'>
                     <button className="btn" onClick={async () => {
-                      console.log('gg')
+                      
                       try {
                         const response = await axios.post(`${url}/api/cheapest`, JSON.stringify(list.products), {
                           headers: {
@@ -204,6 +238,7 @@ function Home() {
                 <div className={showMap ? '' : 'hidden'}>
                   {isLoaded && renderMap()}
                 </div>
+                {/* {renderMap()} */}
 
               </div>
             ) : (

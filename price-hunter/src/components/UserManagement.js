@@ -7,7 +7,7 @@ const UserManagement = () => {
   const [roles, setRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState({});
 
-  useEffect(() => console.log(selectedRoles), [selectedRoles]);
+  // useEffect(() => console.log(selectedRoles), [selectedRoles]);
 
   useEffect(() => {
     // Fetch users and their roles from your server when the component mounts

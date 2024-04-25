@@ -5,6 +5,8 @@ import { Card, Row, Col, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faSearch, faSave, faLineChart, faLocationArrow} from '@fortawesome/free-solid-svg-icons';
 import Modal from "../components/Modal"
+import { DNA } from 'react-loader-spinner'
+import { Link} from 'react-router-dom';
 import '../App.css';
 
 const UserLists = () => {
@@ -14,7 +16,7 @@ const UserLists = () => {
   const [url, setUrl] = useState(`${process.env.REACT_APP_API_URL}`);
   const [cheapestStores, setCheapestStores] = useState([]);
   const [showModal, setShowModal] = useState(false);
-
+  const [showPreloader, setShowPreloader] = useState(false);
   useEffect(() => {
   
     // Fetch shopping lists when the component mounts
@@ -27,9 +29,11 @@ const UserLists = () => {
 
   const fetchShoppingLists = async () => {
     try {
+      setShowPreloader(true);
       const response = await axios.get(`${url}/api/shopping-lists/${user._id}`);
       setShoppingLists(response.data);
-      setLoading(false);
+      // setLoading(false);
+      setShowPreloader(false);
     } catch (error) {
       console.error('Error fetching shopping lists:', error);
     }
@@ -57,20 +61,21 @@ const UserLists = () => {
 
   
 
-  if (loading) {
-    return  (<section className="shadow-blue white-bg padding">
-    <h4 className="mt-4">Запазени Списъци </h4>
-    <div className="mb-3 "><div>Зареждане...</div></div></section>);
-  }
+  // if (loading) {
+  //   return  (<section className="shadow-blue white-bg padding">
+  //   <h4 className="mt-4">Запазени Списъци </h4>
+  //   <div className="mb-3 "><div>Зареждане...</div></div></section>);
+  // }
 
   return (
     <section className="shadow-blue white-bg padding">
       <h4 className="mt-4">Запазени Списъци </h4>
       <div className="mb-3 ">
+     
         {shoppingLists.length > 0 ? (
           <Row xs={1} md={2} lg={3} className="g-4">
-            {shoppingLists.map((list) => (
-              <Col key={list._id} >
+            {shoppingLists.map((list, i) => (
+              <Col key={i} >
                 <Card>
                   <Card.Body>
                     <Card.Title>{list.listName}</Card.Title><button className="btn btn-link" onClick={() => handleDeleteList(list.listId)}>
@@ -102,8 +107,16 @@ const UserLists = () => {
               </Col>
             ))}
           </Row>
-        ) : (
-          <p>No shopping lists found.</p>
+        ) : (<>
+          <DNA
+          visible={showPreloader}
+          height="80"
+          width="80"
+          ariaLabel="dna-loading"
+          wrapperStyle={{}}
+          wrapperClass="dna-wrapper"
+          /> 
+          {!showPreloader && <p>Нямате запазени списъци.<Link className="nav-link" to="/client" >Създайте тук.</Link> </p>}</>
         )}
       </div>
       <Modal show={showModal} content={()=>{return (<>
