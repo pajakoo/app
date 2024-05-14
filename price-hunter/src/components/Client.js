@@ -70,6 +70,8 @@ function Client() {
   const [showModal, setShowModal] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [store, setStore] = useState(null);
+  const [newStoreName, setNewStoreName] = useState('');
 
   const [name, setName] = useState('');
   const typeaheadRef = useRef(null);
@@ -90,6 +92,16 @@ function Client() {
     setShowModal(!showModal);
   };
 
+  const findProductInStores = async (productId) => {
+    try {
+      const response = await axios.get(`${url}/api/products/stores/${productId}`, { withCredentials: true });
+      const storesData = response.data;
+      setStores(storesData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
   const getStores = async () => {
 		try {
 			const { data } = await axios.get(`${url}/api/stores`, { withCredentials: true });
@@ -147,9 +159,9 @@ function Client() {
   useEffect(() => {
   
     if (isProductSelected && isStoreSelected && selectedProduct) {
-    console.log('pajak:', selectedProduct.barcode , selectedStore.storeId );
+    console.log('pajak:', selectedProduct.barcode , selectedStore );
 
-      fetchPriceHistoryForStore(selectedProduct.barcode, selectedProduct._id, selectedStore.storeId);
+      fetchPriceHistoryForStore(selectedProduct.barcode, selectedProduct._id, selectedStore._id);
     }else if(isProductSelected&&selectedProduct){
       fetchPriceHistory(selectedProduct.barcode, selectedProduct._id);
     }
@@ -167,11 +179,21 @@ function Client() {
     fetch(`${url}/api/product/${barcode}/prices/${storeId}`)
     .then((response) => response.json())
     .then((data) => {
+      console.log('success');
+
+      if (data.status != false){
+
+      } else {
+        setisStoreSelected(false);
+      }
       setProductPriceHistories((prevHistories) => ({
         ...prevHistories,
         [productId]: data,
       }));
-    })
+    }).catch((error) => {
+
+      console.error('Error:', error);
+    });
   }
 
   const fetchPriceHistory = (barcode, productId) => {
@@ -327,6 +349,28 @@ function Client() {
 
     setChartDataConfig(newChartDataConfig);
   };
+  
+
+  const handleClearStore = () => {
+    setStore(null);
+    setNewStoreName('');
+    setisStoreSelected(false)
+  };
+  
+  const handleStoreChange = (selected) => {
+    console.log(selected)
+    if (selected.length > 0) {
+      setStore(selected[0]);
+      setSelectedStore(selected[0]);
+      setNewStoreName(selected[0].name);
+      setisStoreSelected(true)
+    } else {
+      setisStoreSelected(false)
+      setStore(null);
+      setSelectedStore(null);
+      setNewStoreName('');
+    }
+  };
 
   const handleChartStoreClick = (store) => {
     if (selectedStore && selectedStore.storeId === store.storeId) {
@@ -355,6 +399,9 @@ function Client() {
         setIsProductSelected(true); // Префключете флага за избран продукт
         setSelectedProduct(product); // Запаметете новия продукт
       }
+
+
+      findProductInStores(product._id);
 
       setShoppingList((prevList) =>
         prevList.map((item) => ({
@@ -476,7 +523,43 @@ function Client() {
 
       <div className="mb-4">
         <div className="paragraph"> 
-      Графика с история на цената за избрания продукт, събирана до момента от всички магазини.
+      Графика с история на цената за избрания продукт{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в магазин - ${newStoreName}`}
+</div>
+<div>
+
+<Typeahead
+            id="storeTypeahead"
+            options={stores}
+            labelKey="name"
+            placeholder="Всички магазини"
+            selected={store ? [store] : []}
+            onChange={ handleStoreChange}
+            renderInput={({ inputRef, referenceElementRef, ...props }) => (
+                  <div className="input-group">
+                    <input
+                      {...props}
+                      ref={(ref) => {
+                        inputRef(ref);
+                        inputRef.current = ref; // Assign the ref to inputRef.current
+                      }}
+                      className="form-control"
+                      onBlur={(e)=>{setNewStoreName(e.target.value);}} // Attach onBlur event handler
+                    />
+                    {store && (
+                      <div className="input-group-append">
+                            <button
+                              type="button"
+                              className="btn "
+                              onClick={handleClearStore}
+                            >
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+          />
+ 
 </div>
         {chartDataConfig.labels.length > 0 && <Line ref={(chart) => setChartInstance(chart)} options={{
             scales: {

@@ -216,7 +216,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
         <Modal show={showModal} content={() => {
           return (<>
             {cheapestStores.length > 0 ? (
-              <div>
+              <div className='scrollable'>
                 <h4>Най-евтини места за покупка:</h4>
                 <ul className="list-group mb-5">
                   {cheapestStores.map((store, index) => (

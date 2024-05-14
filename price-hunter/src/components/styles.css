@@ -39,7 +39,7 @@
     overflow:hidden;
     display: inline-block;
     vertical-align: middle;
-    margin-right:12px;
+    /* margin-right:8px; */
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -114,6 +114,11 @@ video {
   border-radius: 15px;
   overflow: hidden;
   margin: 0 15px 160px;
+}
+
+.pajak-modal .pajak-body .scrollable {
+  height:250px;
+  overflow: auto;
 }
 
 .pajak-modal .pajak-footer {
@@ -516,7 +521,9 @@ box-shadow: 5px 8px 4px 3px rgba(0, 0, 0, 0.4);;
 } 
 
 
-.pajak-map > div{
+.pajak-map > div {
   position: static!important;
 
 }
+
+

@@ -241,12 +241,12 @@ app.get('/api/searchProduct', async (req, res) => {
 
 app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
   const { barcode, storeId } = req.params;
- 
+ console.log('pajak:', barcode, storeId);
   try {
       const product = await Product.findOne({ barcode, store: new Types.ObjectId(storeId) });
 
       if (!product) {
-          return res.status(404).json({ message: 'Продуктът не е намерен' });
+          return res.status(404).json({ message: 'Продуктът не е намерен', status:false });
       }
 
       const prices = await Price.find({ product: product._id }).exec();
@@ -286,9 +286,36 @@ app.get('/api/products/:barcode', async (req, res) => {
   }
 });
 
-
-
-
+app.get('/api/products/stores/:productId', async (req, res) => {
+    const { productId } = req.params;
+    console.log('pajak:',productId);
+    try {
+      // Step 1: Find the product by ID
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+  
+      // Step 2: Extract the barcode of the found product
+      const barcode = product.barcode;
+  
+      // Step 3: Find all products with the same barcode (excluding the current product)
+      const relatedProducts = await Product.find({ barcode, _id: { $ne: productId } });
+  
+      // Step 4: Extract store IDs from all related products
+      const storeIds = relatedProducts.flatMap(p => p.store);
+  console.log(storeIds);
+      // Step 5: Find all stores associated with these store IDs
+      const stores = await Store.find({ _id: { $in: storeIds } });
+  
+      // Return the list of stores
+      res.json(stores);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+  
 
 
 app.get('/api/stores', async (req, res) => {
