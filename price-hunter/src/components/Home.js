@@ -151,7 +151,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
             slot="container-start"
             className="parallax-bg"
             style={{
-              backgroundImage: `url(https://lh3.googleusercontent.com/u/0/drive-viewer/AKGpihZFWh6AJT-QgUErXQgMnLlO8S4dAOgHwASvF-4hZfzozQB8cQZy9y0_cmWrVNhPySI1H4P_tQQ1E-qJ1l2hIfgcTMX5MJUu5D0=w2560-h2588-rw-v1)`,
+              backgroundImage: `url(/images/shopping_activity.png)`,
             }}
             data-swiper-parallax="-23%"
           ></div>

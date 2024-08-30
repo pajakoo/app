@@ -158,73 +158,71 @@ app.get('/api/shopping-lists/random', async (req, res) => {
 
 
 app.get('/api/products-client', async (req, res) => {
- 
-  try {
+    try {
       const products = await Product.aggregate([
-          {
-              $lookup: {
-                  from: 'prices',
-                  localField: '_id',
-                  foreignField: 'product',
-                  as: 'priceData'
-              }
+        {
+          $lookup: {
+            from: 'prices',
+            localField: '_id',
+            foreignField: 'product',
+            as: 'priceData',
           },
-          {
-              $unwind: {
-                  path: '$priceData',
-                  preserveNullAndEmptyArrays: true
-              }
+        },
+        {
+          $unwind: {
+            path: '$priceData',
+            preserveNullAndEmptyArrays: true,
           },
-          {
-              $lookup: {
-                  from: 'stores',
-                  localField: 'store',
-                  foreignField: '_id',
-                  as: 'storeData'
-              }
+        },
+        {
+          $lookup: {
+            from: 'stores',
+            localField: 'priceData.store',
+            foreignField: '_id',
+            as: 'storeData',
           },
-          {
-              $unwind: {
-                  path: '$storeData',
-                  preserveNullAndEmptyArrays: true
-              }
+        },
+        {
+          $unwind: {
+            path: '$storeData',
+            preserveNullAndEmptyArrays: true,
           },
-          {
-              $group: {
-                  _id: '$barcode',
-                  product: { $first: '$$ROOT' }
-              }
+        },
+        {
+          $group: {
+            _id: '$barcode',
+            product: { $first: '$$ROOT' },
           },
-          {
-              $replaceRoot: {
-                  newRoot: '$product'
-              }
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$product',
           },
-          {
-              $project: {
-                  _id: 1,
-                  barcode: 1,
-                  name: 1,
-                  location: 1,
-                  storeId: '$storeData._id',
-                  store: '$storeData.name',
-                  price: {
-                      $ifNull: ['$priceData.price', '$price']
-                  },
-                  date: {
-                      $ifNull: ['$priceData.date', null]
-                  }
-              }
-          }
-      ]).exec();
-      // console.log(products);   aggregate().explain("executionStats"); //for stats of the query
-   
+        },
+        {
+          $project: {
+            _id: 1,
+            barcode: 1,
+            name: 1,
+            location: '$priceData.location',
+            storeId: '$storeData._id',
+            store: '$storeData.name',
+            price: {
+              $ifNull: ['$priceData.price', '$price'],
+            },
+            date: {
+              $ifNull: ['$priceData.date', null],
+            },
+          },
+        },
+      ]);
+  
       res.json(products);
-  } catch (err) {
+    } catch (err) {
       console.error('Грешка при търсене на продуктите', err);
       res.status(500).json({ error: 'Възникна грешка' });
-  } 
-});
+    }
+  });
 
 app.get('/api/searchProduct', async (req, res) => {
   const { code } = req.query;
@@ -239,24 +237,55 @@ app.get('/api/searchProduct', async (req, res) => {
   }
 });
 
+
 app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
   const { barcode, storeId } = req.params;
- console.log('pajak:', barcode, storeId);
+
   try {
-      const product = await Product.findOne({ barcode, store: new Types.ObjectId(storeId) });
-
-      if (!product) {
-          return res.status(404).json({ message: 'Продуктът не е намерен', status:false });
+    // Step 1: Find the prices based on the barcode and storeId
+    const prices = await Price.aggregate([
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'product',
+          foreignField: '_id',
+          as: 'productDetails'
+        }
+      },
+      {
+        $unwind: '$productDetails'
+      },
+      {
+        $match: {
+          'productDetails.barcode': barcode,
+          store: new Types.ObjectId(storeId)
+        }
+      },
+      {
+        $lookup: {
+          from: 'stores',
+          localField: 'store',
+          foreignField: '_id',
+          as: 'storeDetails'
+        }
+      },
+      {
+        $unwind: '$storeDetails'
       }
+    ]);
 
-      const prices = await Price.find({ product: product._id }).exec();
+    // If no prices found, return a 404 error
+    if (!prices.length) {
+      return res.status(404).json({ message: 'No prices found for the given barcode and store', status: false });
+    }
 
-      res.json(prices);
+    res.json(prices);
   } catch (error) {
-      console.error('Грешка при извличане на цените за продукта:', error);
-      res.status(500).json({ message: 'Възникна грешка при извличане на цените за продукта' });
+    console.error('Error fetching prices for the product:', error);
+    res.status(500).json({ message: 'An error occurred while fetching prices for the product' });
   }
 });
+
 
 app.delete('/api/products/:id', async (req, res) => {
   const productId = req.params.id;
@@ -286,36 +315,42 @@ app.get('/api/products/:barcode', async (req, res) => {
   }
 });
 
+
+
+
 app.get('/api/products/stores/:productId', async (req, res) => {
-    const { productId } = req.params;
-    console.log('pajak:',productId);
-    try {
-      // Step 1: Find the product by ID
-      const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-  
-      // Step 2: Extract the barcode of the found product
-      const barcode = product.barcode;
-  
-      // Step 3: Find all products with the same barcode (excluding the current product)
-      const relatedProducts = await Product.find({ barcode, _id: { $ne: productId } });
-  
-      // Step 4: Extract store IDs from all related products
-      const storeIds = relatedProducts.flatMap(p => p.store);
-  console.log(storeIds);
-      // Step 5: Find all stores associated with these store IDs
-      const stores = await Store.find({ _id: { $in: storeIds } });
-  
-      // Return the list of stores
-      res.json(stores);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+  const { productId } = req.params;
+
+  try {
+    // Step 1: Find the product by ID to get the barcode
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
     }
-  });
-  
+
+    // Step 2: Find all prices associated with this product's barcode
+    const prices = await Price.find({ barcode: product.barcode }).populate('store');
+    if (!prices.length) {
+      return res.status(404).json({ error: 'No prices found for this product' });
+    }
+    // Step 3: Extract unique stores from the prices
+    const stores = prices.map(price => price.store);
+    
+    // Remove duplicates if necessary
+    const uniqueStores = Array.from(new Set(stores.map(store => store._id)))
+      .map(id => {
+        return stores.find(store => store._id.equals(id));
+      });
+
+    // Return the list of stores
+    res.json(uniqueStores);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 
 
 app.get('/api/stores', async (req, res) => {
@@ -335,7 +370,7 @@ app.post('/api/products', async (req, res) => {
     try {
         // Check if the store exists
         let existingStore = await Store.findOne({ name: { $regex: new RegExp(store, 'i') } });
-
+   
         if (!existingStore) {
             // If store doesn't exist, create a new one
             const newStore = new Store({
@@ -351,9 +386,9 @@ app.post('/api/products', async (req, res) => {
 
         if (existingProduct) {
             // Check if the product was added by the current user
-            if (existingProduct.addedBy.toString() !== addedBy) {
-                return res.status(403).json({ message: 'Нямате права да обновявате този продукт.' });
-            }
+            // if (existingProduct.addedBy.toString() !== addedBy) {
+            //     return res.status(403).json({ message: 'Нямате права да обновявате този продукт.' });
+            // }
 
             // Update existing product
             existingProduct.price = price;
@@ -366,6 +401,7 @@ app.post('/api/products', async (req, res) => {
                 store: existingProduct.store,
                 product: existingProduct._id,
                 date: Date.now(),
+                barcode:barcode,
                 price: existingProduct.price
             });
 
@@ -377,24 +413,23 @@ app.post('/api/products', async (req, res) => {
             const newProduct = new Product({
                 barcode,
                 name,
-                price,
-                store: existingStore._id,
-                location,
-                addedBy:new Types.ObjectId(userId) // Use Mongoose.Types.Types.ObjectId to create Types.ObjectId
+
             });
 
             await newProduct.save();
 
-            // Insert new price data
             const priceData = new Price({
-                store: existingStore._id,
                 product: newProduct._id,
+                store: existingStore._id,
                 date: Date.now(),
-                price: newProduct.price
+                price: price,
+                location:location,
+                barcode:barcode,
+                addedBy:new Types.ObjectId(userId) // Use Mongoose.Types.Types.ObjectId to create Types.ObjectId
+
             });
 
             await priceData.save();
-
             res.status(201).json({ message: 'Продуктът е успешно създаден' });
         }
     } catch (error) {
@@ -403,71 +438,116 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
- 
+
+
 
 app.get('/api/products', async (req, res) => {
-    const { addedBy } = req.query;
-    
-    try {
-        const products = await Product.aggregate([
-            {
-                $match: { addedBy: new Types.ObjectId(addedBy)  }
-            },
-            {
-                $lookup: {
-                    from: 'prices',
-                    localField: '_id',
-                    foreignField: 'product',
-                    as: 'priceData'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$priceData',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $lookup: {
-                    from: 'stores',
-                    localField: 'store',
-                    foreignField: '_id',
-                    as: 'storeData'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$storeData',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    barcode: 1,
-                    name: 1,
-                    location: 1,
-                    store: '$storeData.name',
-                    price: {
-                        $ifNull: ['$priceData.price', '$price']
-                    },
-                    date: {
-                        $ifNull: ['$priceData.date', null]
-                    }
-                }
-            }
-        ]).exec();
+  const { addedBy } = req.query;
 
-        res.json(products);
-    } catch (err) {
-        console.error('Error fetching products:', err);
-        res.status(500).json({ error: 'An error occurred' });
+  try {
+    // Aggregate prices to get products and their price details added by the specified user
+    const productsWithPrices = await Price.aggregate([
+      { $match: { addedBy: new Types.ObjectId(addedBy) } }, // Filter prices by user
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'product',
+          foreignField: '_id',
+          as: 'productDetails'
+        }
+      },
+      { $unwind: '$productDetails' }, // Unwind product details array
+      {
+        $lookup: {
+          from: 'stores',
+          localField: 'store',
+          foreignField: '_id',
+          as: 'storeDetails'
+        }
+      },
+      { $unwind: '$storeDetails' }, // Unwind store details array
+      {
+        $group: {
+          _id: '$productDetails.barcode', // Group by barcode
+          productDetails: { $first: '$productDetails' }, // Get product details
+          prices: {
+            $push: {
+              priceId: '$_id', // Include price _id for deletion
+              price: '$price',
+              date: '$date',
+              store: {
+                storeId: '$storeDetails._id',
+                name: '$storeDetails.name',
+                location: '$location'
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          barcode: '$_id', // Use the grouped barcode
+          name: '$productDetails.name',
+          prices: 1
+        }
+      }
+    ]);
+
+    res.json(productsWithPrices);
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ error: 'An error occurred' });
+  }
+});
+ 
+
+app.delete('/api/prices/:priceId', async (req, res) => {
+  const { priceId } = req.params;
+  const { addedBy } = req.query;
+
+  try {
+    // Validate the priceId
+    if (!Types.ObjectId.isValid(priceId)) {
+      return res.status(400).json({ error: 'Invalid price ID' });
     }
+
+    // Find and delete the price entry by its _id and the addedBy user
+    const priceEntry = await Price.findOneAndDelete({
+      _id: new Types.ObjectId(priceId),
+      addedBy: new Types.ObjectId(addedBy)
+    });
+
+    if (!priceEntry) {
+      return res.status(404).json({ error: 'Price entry not found or not authorized to delete' });
+    }
+
+    // Check if there are any other prices associated with the same store
+    const otherPricesForStore = await Price.findOne({
+      store: priceEntry.store,
+      product: priceEntry.product,
+      _id: { $ne: priceEntry._id }  // Exclude the current price entry
+    });
+
+    // If no other prices are associated with this store, delete the store entry
+    if (!otherPricesForStore) {
+      const storeDeleted = await Store.findOneAndDelete({ _id: priceEntry.store });
+
+      // Optionally, you can also check if the store was successfully deleted
+      if (!storeDeleted) {
+        return res.status(500).json({ error: 'Failed to delete associated store' });
+      }
+    }
+
+    res.json({ message: 'Price entry and associated store (if orphaned) successfully deleted' });
+  } catch (err) {
+    console.error('Error deleting price entry:', err);
+    res.status(500).json({ error: 'An error occurred' });
+  }
 });
 
-  
 
-  
+
 
 app.get('/api/product/:barcode/history', async (req, res) => {
     const { barcode } = req.params;
@@ -489,6 +569,7 @@ app.get('/api/product/:barcode/history', async (req, res) => {
         res.status(500).json({ message: 'Възникна грешка при намиране на ценовата история' });
     }
 });
+
 
 app.post('/api/cheapest', async (req, res) => {
     const productList = req.body;
