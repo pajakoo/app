@@ -239,10 +239,10 @@ function App() {
         </Routes>
       </main>
 
-      <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-3 mt-4 " }>
+      <div className={toggleHeader ? "mobile-header w-100 py-2 px-3 mt-4 push" : "mobile-header  w-100 py-2 px-2 mt-4 " }>
           <button onClick={handleToggle}  className="menu-icon me-2"><span></span><span></span><span></span></button>
           {/* <span className="site-title dot ms-2" >{user ? user.displayname : ''}</span> */}
-          <div className="image-holder float-end" onClick={()=>{  navigate('/login');}}>
+          <div className="image-holder float-end"  style={{ marginRight: '6px'}} onClick={()=>{  navigate('/login');}}>
           { user && !imageError && <img src={user.avatar} alt={user.displayname} onError={() => setImageError(true)} />} 
           </div>  
         </div>

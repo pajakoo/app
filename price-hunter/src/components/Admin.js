@@ -9,6 +9,7 @@ import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 import { useAuth } from '../AuthProvider';
+import useAutoBlur from '../hooks/useAutoBlur'; 
 import { DNA } from 'react-loader-spinner';
 import axios from 'axios';
 
@@ -31,6 +32,8 @@ function Admin() {
   const Marker = () => <div className="marker"><span role="img">📍</span></div>;
   const navigate = useNavigate();
   const [showPreloader, setShowPreloader] = useState(false);
+
+  useAutoBlur();
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -320,10 +323,10 @@ function Admin() {
                     <ul>
                       {product && product.prices.map((store, i) => (
                         <li key={i} style={{ listStyleType: 'none', margin: '10px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {store.store.name} - {store.price.$numberDecimal}лв. на 
+                        <div style={{ display: 'flex', alignItems: 'center', 'flexDirection': 'column' }}>
+                          <span>{store.store.name} - {store.price.$numberDecimal}лв. на</span> 
                           <span style={{ marginLeft: '10px', color:'grey' }}>
-                            {formatDate(store.date)} {/* Format and display the date */}
+                            {formatDate(store.date)}
                           </span>
                           <button
                             style={{
