@@ -322,9 +322,12 @@ function Client() {
       datasets: [],
     };
 
-    shoppingList.forEach((product) => {
+
+    console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive) )
+
+
+    shoppingList.filter(item => item.isChartButtonActive).forEach((product) => {
       const history = productPriceHistories[product._id];
-      console.log('history',history);
 
       if (history && history.length > 0) {
         const chartLabels = history.map((price) => moment(price.date).format('YYYY-MM-DD'));
@@ -390,28 +393,35 @@ function Client() {
   };
 
   const handleChartProductClick = (product) => {
- 
-      // Проверете дали текущо избрания продукт е същият като новия продукт
-      if (selectedProduct && selectedProduct._id === product._id) {
-        setIsProductSelected(false); // Префключете флага за избран продукт
-        setSelectedProduct(null); // Нулирайте избрания продукт
-      } else {
-        setIsProductSelected(true); // Префключете флага за избран продукт
-        setSelectedProduct(product); // Запаметете новия продукт
-      }
-
-
+    // If the clicked product is already selected, deselect it
+    if (selectedProduct && selectedProduct._id === product._id) {
+      setIsProductSelected(false); // Toggle the flag for product selection
+      setSelectedProduct(null); // Clear the selected product
+      setSelectedStore(null); // Clear the selected store
+      setisStoreSelected(false); // Clear store selection flag
+      setCheapestStores([]); // Clear the cheapest stores list
+      setProductPriceHistories({}); // Clear the price histories
+      setChartDataConfig({ labels: [], datasets: [] }); // Clear chart data
+    } else {
+      // Select the new product
+      setIsProductSelected(true); // Set the flag for product selection
+      setSelectedProduct(product); // Set the new selected product
+      setCheapestStores([]); // Reset the stores list
+      setProductPriceHistories({}); // Reset product price histories
+  
+      // Fetch the product's price history and associated stores
       findProductInStores(product._id);
-
+      handleClearStore();
+      // Update the shopping list to mark only the selected product as active
       setShoppingList((prevList) =>
         prevList.map((item) => ({
           ...item,
-          isChartButtonActive: item._id === product._id ? !isProductSelected : false,
+          isChartButtonActive: item._id === product._id ? !item.isChartButtonActive : false,
         }))
       );
- 
+    }
   };
-
+  
   const renderMap = () => {
     if (loadError) {
       return <div>Error loading Google Maps</div>;

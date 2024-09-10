@@ -13,6 +13,9 @@ import useAutoBlur from '../hooks/useAutoBlur';
 import { DNA } from 'react-loader-spinner';
 import axios from 'axios';
 
+import StoreTypeahead from './StoreTypeahead';
+
+
 function Admin() {
   const videoRef = useRef(null);
   const codeReader = useRef(null);
@@ -21,7 +24,7 @@ function Admin() {
   const [store, setStore] = useState(null);
   const [newStoreName, setNewStoreName] = useState('');
   const [name, setName] = useState('');
-  const [stores, setStores] = useState([]);
+  // const [stores, setStores] = useState([]);
   const [price, setPrice] = useState('');
   const [products, setProducts] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -33,7 +36,20 @@ function Admin() {
   const navigate = useNavigate();
   const [showPreloader, setShowPreloader] = useState(false);
 
-  useAutoBlur();
+  // useAutoBlur();
+  const [stores, setStores] = useState([
+    { name: 'Store 1', id: 1 },
+    { name: 'Store 2', id: 2 },
+  ]);
+
+  const handleCreateStore = (newStoreName) => {
+    // Logic to create a new store and update the store list
+    const newStore = { name: newStoreName, id: stores.length + 1 };
+    setStores([...stores, newStore]); // Update the stores list with the new store
+    console.log('New store created:', newStore);
+  };
+
+
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -128,6 +144,7 @@ function Admin() {
   };
 
   const handleInputChange = (selected) => {
+    console.log('gg call me');
     if (selected.length > 0) {
       setStore(selected[0]);
       setNewStoreName(selected[0].name);
@@ -144,6 +161,7 @@ function Admin() {
 
   const handleAddProduct = async () => {
     try {
+      // debugger;
       if (store && !stores.some(s => s.name === store.name)) {
         setShowPreloader(true);
         const response = await axios.post(`${url}/api/stores`, { name: store.name });
@@ -164,18 +182,17 @@ function Admin() {
         userId: user._id
       });
 
-      if (response.status === 200) {
+      // if (response.status === 200) {
         const productsData = await axios.get(`${url}/api/products`, { params: { addedBy: user._id } });
         setProducts(productsData.data);
         setShowPreloader(false);
         setBarcode('');
         setName('');
         setPrice('');
-        setStore('');
-        setNewStoreName('');
-      } else {
-        console.error('Error creating product');
-      }
+        handleClearStore();
+      // } else {
+      //   console.error('Error creating product');
+      // }
     } catch (error) {
       console.error('Error sending request:', error);
     }
@@ -185,8 +202,9 @@ function Admin() {
     try {
       const response = await axios.delete(`${url}/api/prices/${priceId}`, { params: { addedBy: user._id } });
       if (response.status === 200) {
-        alert(response.data.message);
-        // Refresh products or update state if needed
+        //alert(response.data.message);
+        const productsData = await axios.get(`${url}/api/products`, { params: { addedBy: user._id } });
+        setProducts(productsData.data);
       } else {
         console.error('Error deleting price');
       }
@@ -197,6 +215,7 @@ function Admin() {
   };
 
   const handleDeleteProduct = async (productId) => {
+    console.log(productId)
     try {
       setShowPreloader(true);
       const response = await axios.delete(`${url}/api/products/${productId}`);
@@ -255,7 +274,10 @@ function Admin() {
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Цена"
           />
-          <Typeahead
+
+<StoreTypeahead stores={stores} onCreateStore={handleCreateStore} onStoreSelect={setStore} />
+          
+          {/* <Typeahead
             id="storeTypeahead"
             options={stores}
             labelKey="name"
@@ -271,7 +293,7 @@ function Admin() {
                     inputRef.current = ref; // Assign the ref to inputRef.current
                   }}
                   className="form-control"
-                  onBlur={(e) => { setNewStoreName(e.target.value); }} // Attach onBlur event handler
+                  onBlur={(e) => {  setNewStoreName(e.target.value);  }} 
                 />
                 {store && (
                   <div className="input-group-append">
@@ -286,7 +308,7 @@ function Admin() {
                 )}
               </div>
             )}
-          />
+          /> */}
 
           <div className="d-flex justify-content-end">
             <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
@@ -303,11 +325,11 @@ function Admin() {
         />
         <ul className="list-group">
           {products.map((product, index) => (
-            <li className="list-group-item" key={index}>
+            <li className="list-group-item mb-3" key={index}>
               <div className="d-flex flex-column">
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
-                    <b>Баркод: {product.barcode}</b><br />
+                    Баркод: <b>{product.barcode}</b><br />
                   </div>
                   <button className="btn btn-link" onClick={() => handleDeleteProduct(product._id)}>
                     <FontAwesomeIcon icon={faTrashAlt} />
@@ -315,36 +337,34 @@ function Admin() {
                 </div>
                 <div className="mt-2">
                   <div>
-                    <span className="font-weight-bold">Име:</span> {product.name}
+                    <span className="font-weight-bold">Продукт:</span> <b>{product.name}</b>
                   </div>
                   <div>
                   </div>
                   <div><span className="font-weight-bold">Магазини:</span>
-                    <ul>
-                      {product && product.prices.map((store, i) => (
-                        <li key={i} style={{ listStyleType: 'none', margin: '10px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', 'flexDirection': 'column' }}>
-                          <span>{store.store.name} - {store.price.$numberDecimal}лв. на</span> 
-                          <span style={{ marginLeft: '10px', color:'grey' }}>
-                            {formatDate(store.date)}
+                  <ul className="prices-list">
+                    {product && product.prices.map((store, i) => (
+                      <li key={i} className="price-item-2">
+                        <div className="price-item-content">
+                          <div className="price-item-header">
+                            <span className="store-info">
+                              {store.store.name}
+                            </span><span>- <b>{store.price.$numberDecimal}лв.</b></span> 
+                            
+                          </div>
+                          <span className="price-date">
+                            {formatDate(store.date)}<button
+                              className="delete-button"
+                              onClick={() => handleDeletePrice(store.priceId)}
+                            >
+                              <FontAwesomeIcon className="delete-icon" icon={faX} />
+                            </button>
                           </span>
-                          <button
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#f40606',
-                              cursor: 'pointer',
-                              padding: '0 0 0 12px',
-                              fontSize: '14px',
-                            }}
-                            onClick={() => handleDeletePrice(store.priceId)}
-                          >
-                            <FontAwesomeIcon style={{ color: "#f40606", fontSize: "12px" }} icon={faX} />
-                          </button>
+                          
                         </div>
                       </li>
-                      ))}
-                    </ul>
+                    ))}
+                  </ul>
                   </div>
                   <div>
                   </div>

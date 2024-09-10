@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../App.css';
+import '../App.css'; // Assuming you will add the new CSS below
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState({});
 
-  // useEffect(() => console.log(selectedRoles), [selectedRoles]);
-
   useEffect(() => {
     // Fetch users and their roles from your server when the component mounts
     axios.get(`${process.env.REACT_APP_API_URL}/api/users`)
       .then((response) => {
         setUsers(response.data);
-
-        // Set initial values for selectedRoles based on user roles
         const initialSelectedRoles = {};
         response.data.forEach((user) => {
           initialSelectedRoles[user._id] = user.roles;
@@ -34,11 +30,21 @@ const UserManagement = () => {
     try {
       const updatedRoles = selectedRoles[userId] || [];
       await axios.put(`${process.env.REACT_APP_API_URL}/api/users/${userId}/roles`, { roles: updatedRoles });
-
-      // Fetch users again to update the UI
-      // fetchUsers();
     } catch (error) {
       console.error('Error updating user roles:', error);
+    }
+  };
+
+  // New: Delete user handler
+  const handleDeleteUser = async (userId) => {
+    try {
+      // Call the delete API
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/user/${userId}`);
+
+      // Update the users state to remove the deleted user
+      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+    } catch (error) {
+      console.error('Error deleting user:', error);
     }
   };
 
@@ -47,28 +53,17 @@ const UserManagement = () => {
     setSelectedRoles((prevSelectedRoles) => ({ ...prevSelectedRoles, [userId]: updatedRoles }));
   };
 
-
   return (
-    <section className="shadow-blue white-bg padding">
-      <h4 className="mt-4">Потребители</h4>
-      <div className="mb-3">
-      <div className="table-responsive">
-  <table className="user-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Roles</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {users &&
-        users.map((user) => (
-          <tr key={user._id}>
-            <td>{user.name}</td>
-            <td>{user.email}</td>
-            <td>
+    <section className="user-management">
+      <h4 className="section-title">Users</h4>
+      <div className="users-container">
+        {users && users.map((user) => (
+          <div key={user._id} className="user-card">
+            <div className="user-info">
+              <div className="user-name">{user.name}</div>
+              <div className="user-email">{user.email}</div>
+            </div>
+            <div className="user-roles">
               {roles && (
                 <select
                   className="role-select"
@@ -76,26 +71,30 @@ const UserManagement = () => {
                   value={selectedRoles[user._id] || []}
                   onChange={(e) => handleRoleChange(user._id, e)}
                 >
-                  {roles && roles.map((role) => (
+                  {roles.map((role) => (
                     <option key={role._id} value={role._id}>
                       {role.name}
                     </option>
                   ))}
                 </select>
               )}
-            </td>
-            <td>
-              <button className="edit-button" onClick={() => handleEditRoles(user._id)}>
+            </div>
+            <div className="user-actions">
+              <button
+                className="edit-button"
+                onClick={() => handleEditRoles(user._id)}
+              >
                 Edit Roles
               </button>
-            </td>
-          </tr>
+              <button
+                className="delete-user-button"
+                onClick={() => handleDeleteUser(user._id)}
+              >
+                Delete User
+              </button>
+            </div>
+          </div>
         ))}
-    </tbody>
-  </table>
-</div>
-
-
       </div>
     </section>
   );

@@ -108,7 +108,7 @@ app.get('/api/shopping-lists/random', async (req, res) => {
     try {
         // Fetch random shopping lists from the database
         const randomLists = await ShoppingList.aggregate([
-            { $sample: { size: 3 } } // Get 3 random documents
+            { $sample: { size: 3 } } 
         ]);
 
         // Create an array to store the random shopping list details with product names
@@ -287,17 +287,64 @@ app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
 });
 
 
-app.delete('/api/products/:id', async (req, res) => {
-  const productId = req.params.id;
+
+app.delete('/api/user/:id', async (req, res) => {
   try {
-      await Product.deleteOne({ _id: new Types.ObjectId(productId) });
-      await Price.deleteOne({ product: new Types.ObjectId(productId) });
-      res.json({ message: 'Продуктът и свързаната цена са изтрити успешно' });
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await Price.deleteMany({ addedBy: userId });
+    await Product.deleteMany({ addedBy: userId });
+    await Store.deleteMany({ addedBy: userId });
+    await User.findByIdAndDelete(userId);
+    await ShoppingList.deleteMany({userId:userId});
+
+    res.status(200).json({ message: 'User, stores, products, and associated data deleted successfully' });
   } catch (error) {
-      console.error('Грешка при изтриване на продукта и цената:', error);
-      res.status(500).json({ message: 'Възникна грешка при изтриване на продукта и цената' });
+    console.error('Error during user deletion:', error);
+    res.status(500).json({ message: 'Server error', error });
   }
 });
+
+
+app.delete('/api/products/:id', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Step 1: Find all prices associated with this product
+    const prices = await Price.find({ product: new Types.ObjectId(productId) });
+
+    if (prices.length > 0) {
+      // Step 2: Collect all store IDs from the prices related to this product
+      const storeIds = prices.map(price => price.store);
+
+      // Step 3: Delete all prices related to the product
+      await Price.deleteMany({ product: new Types.ObjectId(productId) });
+
+      // Step 4: For each store ID, check if the store is associated with any other products
+      for (const storeId of storeIds) {
+        const remainingPrices = await Price.find({ store: storeId });
+        if (remainingPrices.length === 0) {
+          // No more prices associated with this store, so we can delete the store
+          await Store.deleteOne({ _id: storeId });
+        }
+      }
+    }
+
+    // Step 5: Delete the product itself
+    await Product.deleteOne({ _id: new Types.ObjectId(productId) });
+
+    res.json({ message: 'Продуктът и свързаните документи са изтрити успешно' });
+  } catch (error) {
+    console.error('Грешка при изтриване на продукта и свързаните документи:', error);
+    res.status(500).json({ message: 'Възникна грешка при изтриване на продукта и свързаните документи' });
+  }
+});
+
 
 app.get('/api/products/:barcode', async (req, res) => {
  
@@ -363,80 +410,80 @@ app.get('/api/stores', async (req, res) => {
       res.status(500).json({ error: 'Възникна грешка при извличане на магазините' });
   }
 });
-
+ 
 app.post('/api/products', async (req, res) => {
-    const { barcode, name, price, store, location, userId } = req.body;
+  const { barcode, name, price, store, location, userId } = req.body;
 
-    try {
-        // Check if the store exists
-        let existingStore = await Store.findOne({ name: { $regex: new RegExp(store, 'i') } });
-   
-        if (!existingStore) {
-            // If store doesn't exist, create a new one
-            const newStore = new Store({
-                name: store,
-                location: { lat: 0, lng: 0 } // Set default location or use the location from req.body
-            });
+  try {
+    // Check if the store exists based on store name (case-insensitive)
+    let existingStore = await Store.findOne({ name: { $regex: new RegExp(store, 'i') } });
 
-            existingStore = await newStore.save();
-        }
+    if (!existingStore) {
+      // If the store doesn't exist, create a new one
+      const newStore = new Store({
+        name: store,
+        addedBy: new Types.ObjectId(userId), // Adding userId as addedBy
+        location: location || { lat: 0, lng: 0 }, // Either use provided location or default
+      });
 
-        // Check if the product already exists in the store
-        const existingProduct = await Product.findOne({ barcode, store: existingStore._id });
-
-        if (existingProduct) {
-            // Check if the product was added by the current user
-            // if (existingProduct.addedBy.toString() !== addedBy) {
-            //     return res.status(403).json({ message: 'Нямате права да обновявате този продукт.' });
-            // }
-
-            // Update existing product
-            existingProduct.price = price;
-            existingProduct.location = location;
-
-            await existingProduct.save();
-
-            // Insert new price data
-            const priceData = new Price({
-                store: existingProduct.store,
-                product: existingProduct._id,
-                date: Date.now(),
-                barcode:barcode,
-                price: existingProduct.price
-            });
-
-            await priceData.save();
-
-            res.json({ message: 'Продуктът е обновен успешно' });
-        } else {
-            // Create a new product
-            const newProduct = new Product({
-                barcode,
-                name,
-
-            });
-
-            await newProduct.save();
-
-            const priceData = new Price({
-                product: newProduct._id,
-                store: existingStore._id,
-                date: Date.now(),
-                price: price,
-                location:location,
-                barcode:barcode,
-                addedBy:new Types.ObjectId(userId) // Use Mongoose.Types.Types.ObjectId to create Types.ObjectId
-
-            });
-
-            await priceData.save();
-            res.status(201).json({ message: 'Продуктът е успешно създаден' });
-        }
-    } catch (error) {
-        console.error('Грешка при създаване/обновяване на продукта:', error);
-        res.status(500).json({ message: 'Възникна грешка при създаване/обновяване на продукта', error: error.message });
+      existingStore = await newStore.save(); // Save the new store
     }
+
+    // Check if the product already exists by barcode
+    const existingProduct = await Product.findOne({ barcode });
+
+    if (existingProduct) {
+      // Update existing product
+      existingProduct.name = name;
+      existingProduct.addedBy = new Types.ObjectId(userId); // Ensure addedBy is set to the current user
+      await existingProduct.save(); // Save updated product details
+
+      // Insert new price for the existing product
+      const priceData = new Price({
+        store: existingStore._id, // Store reference
+        product: existingProduct._id, // Product reference
+        date: Date.now(),
+        addedBy: new Types.ObjectId(userId), // AddedBy reference
+        barcode: barcode,
+        location: location, // Ensure the location is included
+        price: price,
+      });
+
+      await priceData.save(); // Save the price entry
+      res.json({ message: 'Product updated successfully' });
+    } else {
+      // Create a new product if it doesn't exist
+      const newProduct = new Product({
+        barcode: barcode,
+        name: name,
+        addedBy: new Types.ObjectId(userId), // Ensure the user who added the product is recorded
+      });
+
+      await newProduct.save(); // Save the new product
+
+      // Insert the price for the new product
+      const priceData = new Price({
+        store: existingStore._id, // Reference to the store
+        product: newProduct._id, // Reference to the newly created product
+        date: Date.now(),
+        price: price,
+        location: location, // Location data
+        barcode: barcode,
+        addedBy: new Types.ObjectId(userId), // Reference to the user who added the product
+      });
+
+      await priceData.save(); // Save the price entry
+      res.status(201).json({ message: 'Product created successfully' });
+    }
+  } catch (error) {
+    console.error('Error creating/updating product:', error);
+    res.status(500).json({
+      message: 'An error occurred while creating/updating the product',
+      error: error.message,
+    });
+  }
 });
+
 
 
 
@@ -486,7 +533,7 @@ app.get('/api/products', async (req, res) => {
       },
       {
         $project: {
-          _id: 0,
+          _id: '$productDetails._id',
           barcode: '$_id', // Use the grouped barcode
           name: '$productDetails.name',
           prices: 1

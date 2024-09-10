@@ -527,3 +527,58 @@ box-shadow: 5px 8px 4px 3px rgba(0, 0, 0, 0.4);;
 }
 
 
+
+
+.prices-list {
+  padding: 0;
+  margin: 0;
+}
+
+.price-item-2 {
+  list-style-type: none;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.price-item-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.price-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.store-info {
+  font-size: 16px;
+  /* font-weight: bold; */
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: #f40606;
+  cursor: pointer;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.delete-icon {
+  color: #f40606;
+  font-size: 12px;
+}
+
+.price-date {
+  margin-top: 5px;
+  color: grey;
+  font-size: 14px;
+}

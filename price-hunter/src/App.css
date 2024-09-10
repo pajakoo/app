@@ -1830,4 +1830,115 @@ button.close {
 
 
 
+.delete-store-entry{
+  color:red!important;
+}
 
+
+.user-management {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.section-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.users-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #666;
+}
+
+.user-roles {
+  margin-bottom: 10px;
+}
+
+.role-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.user-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button, .delete-user-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white!important;
+}
+
+.delete-user-button {
+  background-color: #dc3545;
+  color: white!important;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+.delete-user-button:hover {
+  background-color: #c82333;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .user-card {
+    flex-direction: column;
+  }
+
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .role-select {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .edit-button, .delete-user-button {
+    font-size: 16px;
+    padding: 12px;
+  }
+}

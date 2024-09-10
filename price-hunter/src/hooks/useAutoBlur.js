@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const useAutoBlur = () => {
   useEffect(() => {
     const handleInputChange = (event) => {
-      console.log(event.target.tagName);
+      
 
       if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' ) {
         event.target.blur();
@@ -26,6 +26,7 @@ const useAutoBlur = () => {
     };
 
     const handleInputClick = (event) => {
+      console.log(event.target.tagName);
       if( event.target.tagName === 'A' ) {
         const linkElement = event.target;
         if (linkElement) {
@@ -49,6 +50,7 @@ const useAutoBlur = () => {
 
     return () => {
       document.removeEventListener('change', handleInputChange);
+      document.removeEventListener('click', handleInputClick);
     };
   }, []);
 };
