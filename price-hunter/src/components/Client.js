@@ -315,28 +315,35 @@ function Client() {
   const getRandomColor = () => {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   };
-
   const createChart = () => {
     const newChartDataConfig = {
       labels: [],
       datasets: [],
     };
-
-
-    console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive) )
-
-
+  
+    // Set decimal places based on screen size (1 decimal for mobile, 2 for desktop)
+    const decimalPlaces = window.innerWidth < 768 ? 1 : 2;
+  
+    console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive));
+  
+    // Filter the shopping list for active chart buttons and generate chart data
     shoppingList.filter(item => item.isChartButtonActive).forEach((product) => {
       const history = productPriceHistories[product._id];
-
+  
       if (history && history.length > 0) {
+        // Map the date and format it for chart labels
         const chartLabels = history.map((price) => moment(price.date).format('YYYY-MM-DD'));
+  
+        // Sort the labels by date
         chartLabels.sort((a, b) => moment(a, 'YYYY-MM-DD').toDate() - moment(b, 'YYYY-MM-DD').toDate());
-        const chartData = history.map((price) => price.price.$numberDecimal);
-        const store = history.find((el) => {
-          return stores[el.store];
-        });
-        //console.log(store);
+  
+        // Map the price history, ensuring prices are rounded to the correct decimal places
+        const chartData = history.map((price) => parseFloat(price.price.$numberDecimal).toFixed(decimalPlaces));
+  
+        // Optionally, get the store for the product's price history
+        const store = history.find((el) => stores[el.store]);
+  
+        // Add the dataset to the chart configuration
         newChartDataConfig.labels = chartLabels;
         newChartDataConfig.datasets.push({
           label: `Цена`,
@@ -344,14 +351,39 @@ function Client() {
           borderColor: getRandomColor(),
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           yAxisID: 'y',
-          fill: true
+          fill: true,
         });
       }
     });
-    //console.log(newChartDataConfig.datasets);
-
-    setChartDataConfig(newChartDataConfig);
+  
+    // Y-axis configuration to round ticks to the appropriate decimal places
+    const chartOptions = {
+      scales: {
+        y: {
+          ticks: {
+            callback: function(value) {
+              return value.toFixed(decimalPlaces); // Format y-axis values
+            },
+          },
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              return tooltipItem.raw.toFixed(decimalPlaces); // Format tooltip values
+            },
+          },
+        },
+      },
+    };
+  
+    setChartDataConfig({
+      ...newChartDataConfig,
+      options: chartOptions, // Add the options to the chart config
+    });
   };
+  
   
 
   const handleClearStore = () => {
