@@ -72,6 +72,7 @@ function Client() {
   const [showModal2, setShowModal2] = useState(false);
   const [store, setStore] = useState(null);
   const [newStoreName, setNewStoreName] = useState('');
+  const [loadingProductId, setLoadingProductId] = useState(null); // Keep track of loading product
 
   const [name, setName] = useState('');
   const typeaheadRef = useRef(null);
@@ -97,6 +98,7 @@ function Client() {
       const response = await axios.get(`${url}/api/products/stores/${productId}`, { withCredentials: true });
       const storesData = response.data;
       setStores(storesData);
+      setLoadingProductId(null);
     } catch (err) {
       console.error(err);
     }
@@ -317,12 +319,11 @@ function Client() {
   };
   const createChart = () => {
     const newChartDataConfig = {
-      labels: [],
-      datasets: [],
+        datasets: [],
     };
   
     // Set decimal places based on screen size (1 decimal for mobile, 2 for desktop)
-    const decimalPlaces = window.innerWidth < 768 ? 1 : 2;
+    const decimalPlaces = 1;
   
     console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive));
   
@@ -348,7 +349,7 @@ function Client() {
         newChartDataConfig.datasets.push({
           label: `Цена`,
           data: chartData,
-          borderColor: getRandomColor(),
+          borderColor:'#black',// getRandomColor(),
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           yAxisID: 'y',
           fill: true,
@@ -384,8 +385,6 @@ function Client() {
     });
   };
   
-  
-
   const handleClearStore = () => {
     setStore(null);
     setNewStoreName('');
@@ -424,35 +423,40 @@ function Client() {
     // console.log(store.storeId,cheapestStores);
   };
 
-  const handleChartProductClick = (product) => {
-    // If the clicked product is already selected, deselect it
-    if (selectedProduct && selectedProduct._id === product._id) {
-      setIsProductSelected(false); // Toggle the flag for product selection
-      setSelectedProduct(null); // Clear the selected product
-      setSelectedStore(null); // Clear the selected store
-      setisStoreSelected(false); // Clear store selection flag
-      setCheapestStores([]); // Clear the cheapest stores list
-      setProductPriceHistories({}); // Clear the price histories
-      setChartDataConfig({ labels: [], datasets: [] }); // Clear chart data
-    } else {
-      // Select the new product
-      setIsProductSelected(true); // Set the flag for product selection
-      setSelectedProduct(product); // Set the new selected product
-      setCheapestStores([]); // Reset the stores list
-      setProductPriceHistories({}); // Reset product price histories
+
+  const handleChartProductClick = async (product) => {
+    // Check if the clicked product is already selected
+    if (loadingProductId) return; // Disable clicks if a product is loading
   
-      // Fetch the product's price history and associated stores
-      findProductInStores(product._id);
-      handleClearStore();
-      // Update the shopping list to mark only the selected product as active
-      setShoppingList((prevList) =>
-        prevList.map((item) => ({
-          ...item,
-          isChartButtonActive: item._id === product._id ? !item.isChartButtonActive : false,
-        }))
-      );
+    if (selectedProduct && selectedProduct._id === product._id) {
+      // Deselect the currently selected product
+      setIsProductSelected(false);
+      setSelectedProduct(null);
+      setSelectedStore(null);
+      setisStoreSelected(false);
+      setCheapestStores([]);
+      setProductPriceHistories({});
+      setChartDataConfig({ labels: [], datasets: [] });
+    } else {
+        setLoadingProductId(product._id);
+        setIsProductSelected(true);
+        setSelectedProduct(product);
+        setCheapestStores([]);
+        setProductPriceHistories({});
+        findProductInStores(product._id);
+        handleClearStore();
     }
+  
+    // Update the shopping list to reflect the active state
+    setShoppingList(prevList =>
+      prevList.map(item => ({
+        ...item,
+        isChartButtonActive: item._id === product._id ? !item.isChartButtonActive : false,
+      }))
+    );
   };
+  
+  
   
   const renderMap = () => {
     if (loadError) {
@@ -524,30 +528,33 @@ function Client() {
 
       <ul className="pajak-list mb-4">
 
-        {shoppingList.map((product) => (
-          <li
-            key={product._id}
-            className={` d-flex justify-content-between align-items-center`}
-          >
-            {product.name}
-            <div className="d-flex">
-              <button
-                className={`btn btn-sm my-2 ${
-                  product.isChartButtonActive ? 'active' : ''
-                }`}
-                onClick={() => handleChartProductClick(product)}
-              >
-                <FontAwesomeIcon icon={faLineChart} />
-              </button>
-              <button
-                className="btn btn-sm my-2"
-                onClick={() => handleRemoveProduct(product)}
-              >
-                <FontAwesomeIcon icon={faTrashAlt} />
-              </button>
-            </div>
-          </li>
-        ))}
+      {shoppingList.map((product) => (
+        <li
+          key={product._id}
+          className={`d-flex justify-content-between align-items-center`}
+        >
+          {product.name}
+          <div className="d-flex">
+            <button
+              className={`btn btn-sm my-2 ${
+                product.isChartButtonActive ? 'active' : ''
+              }`}
+              onClick={() => handleChartProductClick(product)}
+              disabled={loadingProductId === product._id} // Disable if this product is loading
+            >
+              <FontAwesomeIcon icon={faLineChart} />
+            </button>
+            <button
+              className="btn btn-sm my-2"
+              onClick={() => handleRemoveProduct(product)}
+              disabled={loadingProductId === product._id} // Disable remove button as well
+            >
+              <FontAwesomeIcon icon={faTrashAlt} />
+            </button>
+          </div>
+        </li>
+      ))}
+
       </ul>
       <div className="mb-3 d-flex justify-content-end">
   <button className="btn btn-pajak  " onClick={toggleShowModal}>
@@ -591,7 +598,7 @@ function Client() {
                       <div className="input-group-append">
                             <button
                               type="button"
-                              className="btn "
+                              className="btn delete-store-entry"
                               onClick={handleClearStore}
                             >
                           <span aria-hidden="true">&times;</span>

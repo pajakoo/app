@@ -22,7 +22,6 @@ function Admin() {
   const [barcode, setBarcode] = useState('');
   const [disabledName, setDisabledName] = useState(false);
   const [store, setStore] = useState(null);
-  const [newStoreName, setNewStoreName] = useState('');
   const [name, setName] = useState('');
   // const [stores, setStores] = useState([]);
   const [price, setPrice] = useState('');
@@ -143,20 +142,8 @@ function Admin() {
     }
   };
 
-  const handleInputChange = (selected) => {
-    console.log('gg call me');
-    if (selected.length > 0) {
-      setStore(selected[0]);
-      setNewStoreName(selected[0].name);
-    } else {
-      setStore(null);
-      setNewStoreName('');
-    }
-  };
-
   const handleClearStore = () => {
     setStore(null);
-    setNewStoreName('');
   };
 
   const handleAddProduct = async () => {
@@ -177,7 +164,7 @@ function Admin() {
         barcode,
         name,
         price,
-        store: store ? store.name : newStoreName,
+        store: store.name,
         location: currentLocation,
         userId: user._id
       });
@@ -215,7 +202,6 @@ function Admin() {
   };
 
   const handleDeleteProduct = async (productId) => {
-    console.log(productId)
     try {
       setShowPreloader(true);
       const response = await axios.delete(`${url}/api/products/${productId}`);
@@ -275,7 +261,7 @@ function Admin() {
             placeholder="Цена"
           />
 
-<StoreTypeahead stores={stores} onCreateStore={handleCreateStore} onStoreSelect={setStore} />
+          <StoreTypeahead stores={stores} onCreateStore={handleCreateStore} onStoreSelect={setStore} selectedStore={store} />
           
           {/* <Typeahead
             id="storeTypeahead"
@@ -311,7 +297,7 @@ function Admin() {
           /> */}
 
           <div className="d-flex justify-content-end">
-            <button className="btn btn-primary" onClick={handleAddProduct}>Добави продукт</button>
+            <button className="btn btn-primary" onClick={handleAddProduct }>Добави продукт</button>
           </div>
         </div>
         <h4>Добавени от мен продукти</h4>

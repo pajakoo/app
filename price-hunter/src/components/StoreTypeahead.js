@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead'; // Import Typeahead component
 
-const StoreTypeahead = ({ stores, onCreateStore, onStoreSelect }) => {
-  const [selectedStore, setSelectedStore] = useState(null);
+const StoreTypeahead = ({ stores, onCreateStore, onStoreSelect, selectedStore }) => {
+  // const [selectedStore, setSelectedStore] = useState(null);
   const [newStoreName, setNewStoreName] = useState('');
 
   const handleInputChange = (selected) => {
     // Handle case where user selects an existing store from the Typeahead
     if (selected.length > 0 && selected[0].customOption !== true) {
-      setSelectedStore(selected[0]); // Select the existing store
+      onStoreSelect(selected[0]); // Select the existing store
       setNewStoreName(''); // Clear new store name
       onStoreSelect(selected[0]); // Pass the selected store to parent component
     } else {
-      setSelectedStore(null); // No store selected
+      onStoreSelect(null); // No store selected
       const newStore = selected.length > 0 ? { name: selected[0].name } : null;
       setNewStoreName(newStore ? newStore.name : ''); // If custom option is entered, set it as new store name
       onStoreSelect(newStore); // Pass the new store name to the parent
@@ -23,7 +23,7 @@ const StoreTypeahead = ({ stores, onCreateStore, onStoreSelect }) => {
     if (newStoreName) {
       const newStore = { name: newStoreName };
       onCreateStore(newStoreName); // Call the function to create a new store
-      setSelectedStore(newStore);
+      onStoreSelect(newStore);
       onStoreSelect(newStore); // Pass the new store to the parent component
       setNewStoreName(''); // Reset new store name after creation
     }
@@ -31,7 +31,7 @@ const StoreTypeahead = ({ stores, onCreateStore, onStoreSelect }) => {
 
 
   const handleClearStore = () => {
-    setSelectedStore(null);
+    onStoreSelect(null);
     setNewStoreName('');
   };
 
