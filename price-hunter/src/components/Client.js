@@ -339,7 +339,8 @@ function Client() {
         chartLabels.sort((a, b) => moment(a, 'YYYY-MM-DD').toDate() - moment(b, 'YYYY-MM-DD').toDate());
   
         // Map the price history, ensuring prices are rounded to the correct decimal places
-        const chartData = history.map((price) => parseFloat(price.price.$numberDecimal).toFixed(decimalPlaces));
+        const chartData = history.map((price) => parseFloat(price.price).toFixed(decimalPlaces));
+        // const chartData = history.map((price) => parseFloat(price.price.$numberDecimal).toFixed(decimalPlaces));
   
         // Optionally, get the store for the product's price history
         const store = history.find((el) => stores[el.store]);

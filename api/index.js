@@ -609,8 +609,14 @@ app.get('/api/product/:barcode/history', async (req, res) => {
         const productIds = products.map((product) => product._id);
   
         const prices = await Price.find({ product: { $in: productIds } }).exec();
-  
-        res.json(prices);
+        
+        // Format prices before returning them
+        const formattedPrices = prices.map((price) => ({
+          ...price._doc, // Use _doc to get raw document data in Mongoose
+          price: parseFloat(price.price.toString()).toFixed(2), // Convert Decimal128 to number and round to 2 decimal places
+        }));
+
+        res.json(formattedPrices);
     } catch (error) {
         console.error('Грешка при намиране на ценовата история:', error);
         res.status(500).json({ message: 'Възникна грешка при намиране на ценовата история' });
