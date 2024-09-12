@@ -161,7 +161,7 @@ function Client() {
   useEffect(() => {
   
     if (isProductSelected && isStoreSelected && selectedProduct) {
-    console.log('pajak:', selectedProduct.barcode , selectedStore );
+    //console('pajak:', selectedProduct.barcode , selectedStore );
 
       fetchPriceHistoryForStore(selectedProduct.barcode, selectedProduct._id, selectedStore._id);
     }else if(isProductSelected&&selectedProduct){
@@ -171,7 +171,7 @@ function Client() {
   
 
   useEffect(() => {
-    // console.log('pajak',selectedStoreLocation)
+     //console('pajak',selectedStoreLocation)
     if (Object.keys(productPriceHistories).length > 0) {
       createChart();
     }
@@ -181,7 +181,7 @@ function Client() {
     fetch(`${url}/api/product/${barcode}/prices/${storeId}`)
     .then((response) => response.json())
     .then((data) => {
-      console.log('success');
+      //console('success');
 
       if (data.status != false){
 
@@ -255,7 +255,7 @@ function Client() {
       });
 
       // Handle success, e.g., show a success message
-      console.log('Shopping list saved successfully');
+      //console('Shopping list saved successfully');
 
       // Optionally, you can reset the shopping list after saving
       setShoppingList([]);
@@ -325,7 +325,7 @@ function Client() {
     // Set decimal places based on screen size (1 decimal for mobile, 2 for desktop)
     const decimalPlaces = 1;
   
-    console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive));
+    // console.log('pajak:', shoppingList.filter(item => item.isChartButtonActive));
   
     // Filter the shopping list for active chart buttons and generate chart data
     shoppingList.filter(item => item.isChartButtonActive).forEach((product) => {
@@ -393,7 +393,7 @@ function Client() {
   };
   
   const handleStoreChange = (selected) => {
-    console.log(selected)
+    //console.log(selected)
     if (selected.length > 0) {
       setStore(selected[0]);
       setSelectedStore(selected[0]);
@@ -615,51 +615,16 @@ function Client() {
             scales: {
                 y: {
                     ticks: {
-                        // Include a dollar sign in the ticks
                         callback: function(value, index, ticks) {
-                          //console.log(value, index, ticks)
-                            return value + 'лв';
+                          //console(value, index, ticks)
+                            return parseFloat(value).toFixed(2)  + 'лв';
                         }
                     }
                 }
             }
           }} data={chartDataConfig} />}
       </div>)}
-
-      {/* {cheapestStores.length > 0 ? (
-        <div>
-          <h4>Най-евтини места за покупка:</h4>
-          <ul className="list-group mb-4">
-            {cheapestStores.map((store, index) => (
-              <li key={index} className="list-group-item">
-                <div>
-                  В <b>{store.store}</b> можете да го закупите за обща сума от{' '}
-                  <b>
-                    {new Intl.NumberFormat('bg-BG', {
-                      style: 'currency',
-                      currency: 'BGN',
-                    }).format(store.totalPrice.toString())}
-                  </b>
-                </div>
-                <button
-                className={`btn btn-sm  ${
-                  store.isChartButtonActive ? 'active' : ''
-                }`}
-                onClick={() => handleChartStoreClick(store)}
-              >
-                <FontAwesomeIcon icon={faLineChart} />
-              </button>
-              <button className={`btn btn-sm `} onClick={() => handleStoreClick(store)}>
-                <FontAwesomeIcon icon={faLocationArrow} /></button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <div>
-          <p>Няма намерени резултати.</p>
-        </div>
-      )} */}
+ 
       <span>{ selectedStoreLocation ? selectedStoreLocation.latitude :''}</span>
       <div className={showMap ? '' : 'hidden'}>
       {isLoaded && renderMap()}

@@ -279,7 +279,17 @@ app.get('/api/product/:barcode/prices/:storeId', async (req, res) => {
       return res.status(404).json({ message: 'No prices found for the given barcode and store', status: false });
     }
 
-    res.json(prices);
+
+    // Format prices before returning them
+    const formattedPrices = prices.map((price) => ({
+      ...price._doc, // Use _doc to get raw document data in Mongoose
+      price: parseFloat(price.price.toString()).toFixed(2), // Convert Decimal128 to number and round to 2 decimal places
+    }));
+
+    res.json(formattedPrices);
+
+
+    // res.json(prices);
   } catch (error) {
     console.error('Error fetching prices for the product:', error);
     res.status(500).json({ message: 'An error occurred while fetching prices for the product' });
