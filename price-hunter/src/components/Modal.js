@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 
-const Modal = ({ show, onConfirmButtonClick, onCloseButtonClick, content }) => {
+const Modal = ({ show, onConfirmButtonClick, onCloseButtonClick, content, showConfirmBtn }) => {
   if (!show) {
     return null;
   }
@@ -12,7 +12,7 @@ const Modal = ({ show, onConfirmButtonClick, onCloseButtonClick, content }) => {
             {content()}
         </div>
         <div className="pajak-footer">
-          <button className="btn btn-primary ms-3" onClick={onConfirmButtonClick}>Потвърди</button>
+          { !showConfirmBtn || <button className="btn btn-primary ms-3" onClick={onConfirmButtonClick}>Потвърди</button>}
           <button  className=" btn-pajak" onClick={onCloseButtonClick}>Откажи</button>
         </div>
       </div>

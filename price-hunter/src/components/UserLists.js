@@ -119,7 +119,7 @@ const UserLists = () => {
           {!showPreloader && <p>Нямате запазени списъци.<Link className="nav-link" to="/client" >Създайте тук.</Link> </p>}</>
         )}
       </div>
-      <Modal show={showModal} content={()=>{return (<>
+      <Modal showConfirmBtn={false} show={showModal} content={()=>{return (<>
         {cheapestStores.length > 0 ? (
         <div>
           <h4>Най-евтини места за покупка:</h4>

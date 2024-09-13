@@ -213,7 +213,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
 
           ))}
         </Swiper> )}
-        <Modal show={showModal} content={() => {
+        <Modal showConfirmBtn={false} show={showModal} content={() => {
           return (<>
             {cheapestStores.length > 0 ? (
               <div className='scrollable'>

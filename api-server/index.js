@@ -260,7 +260,7 @@ app.post('/api/userInfo', async (req, res) => {
                 sub: user.sub,
                 name: user.name,
                 email: user.email,
-                roles: [new ObjectId('65660583e8d841f79b8fe615')]
+                roles: [new ObjectId('66e42acdf1824e0a11ddfe1c')]
             };
 
             // Insert the new user into the database

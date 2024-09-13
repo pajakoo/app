@@ -173,7 +173,7 @@ function App() {
                   Моите запазени списъци
                 </Link>
               </li>
-              { checkUserRights('65660572e8d841f79b8fe614') && (
+              { checkUserRights('66e42aa8f1824e0a11ddfe1b') && (
                 <li className="nav-item">
                   <Link className="nav-link" to="/users" onClick={handleToggle}>
                     Права на потребители

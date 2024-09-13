@@ -242,6 +242,9 @@ function Client() {
   };
 
   const handleSaveList = async () => {
+    
+
+    if (!name) { return };
     // console.log('pppp',user);
     try {
       // Assuming your server endpoint for saving a shopping list is '/api/shopping-lists'
@@ -486,7 +489,7 @@ function Client() {
     
      {/* {!user && <Login />  } */}
     <section className="shadow-blue white-bg padding section-min-hight-420">
-    <Modal show={showModal} content={()=>{return (<>
+    <Modal showConfirmBtn={true} show={showModal} content={()=>{return (<>
       <input
             type="text"
             className="form-control"
@@ -496,7 +499,7 @@ function Client() {
           />
     
     </>)}} onConfirmButtonClick={handleSaveList} onCloseButtonClick={ toggleShowModal} />
-    <Modal show={showModal2} content={()=>{return (<>
+    <Modal showConfirmBtn={true} show={showModal2} content={()=>{return (<>
       Добавете 1 продукт за да отключите възможността да ползвате приложението
     </>)}} onConfirmButtonClick={ () => {  navigate('/admin'); } } onCloseButtonClick={() => toggleShowModal(showModal2)} />
 
@@ -504,7 +507,7 @@ function Client() {
       <div className="mb-3 flex-wrap ">
         {suggestedProducts.length > 0 && (
           <Typeahead
-            placeholder='Въведете имепродукт'
+            placeholder='Въведете име на продукт'
             ref={typeaheadRef} 
             id="productTypeahead"
             options={suggestedProducts}
@@ -558,8 +561,8 @@ function Client() {
 
       </ul>
       <div className="mb-3 d-flex justify-content-end">
-  <button className="btn btn-pajak  " onClick={toggleShowModal}>
-    <FontAwesomeIcon icon={faSave} /> Запази списъка
+  <button  className="btn btn-pajak  " onClick={()=>user ? toggleShowModal() : navigate('/login')}>
+    <FontAwesomeIcon icon={faSave} /> Запази списъка в профила си
   </button>  
 </div>
 
@@ -573,7 +576,7 @@ function Client() {
 
       <div className="mb-4">
         <div className="paragraph"> 
-      Графика с история на цената за избрания продукт{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в магазин - ${newStoreName}`}
+          <span className="text-secondary">Графика с история на цената за избрания продукт </span>{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в магазин - ${newStoreName}`}
 </div>
 <div>
 

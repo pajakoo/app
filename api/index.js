@@ -70,24 +70,25 @@ app.put('/api/shopping-lists/:listId', async (req, res) => {
 });
 // API endpoint to delete a shopping list by ID
 app.delete('/api/shopping-lists/:listId', async (req, res) => {
-    const { listId } = req.params;
-  
-    try {
-      // Delete the shopping list using ShoppingList model
-      const result = await ShoppingList.deleteOne({ _id: new Types.ObjectId(listId) });
-  
-      if (result.deletedCount > 0) {
-        // Shopping list deleted successfully
-        res.json({ message: 'Shopping list deleted successfully' });
+  const { listId } = req.params;
+
+  try {
+      // Delete the shopping list using findByIdAndDelete
+      const result = await ShoppingList.findByIdAndDelete(listId);
+
+      if (result) {
+          // Shopping list deleted successfully
+          res.json({ message: 'Shopping list deleted successfully' });
       } else {
-        // Shopping list not found with the given ID
-        res.status(404).json({ error: 'Shopping list not found' });
+          // Shopping list not found with the given ID
+          res.status(404).json({ error: 'Shopping list not found' });
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error deleting shopping list:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  }
+});
+
 
 // API endpoint to get all shopping lists
 app.get('/api/shopping-lists', async (req, res) => {
