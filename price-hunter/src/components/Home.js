@@ -69,6 +69,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
   });
 
   const handleStoreClick = (store) => {
+    console.log(store);
     setSelectedStoreLocation(store);
     setShowMap(true);
   };
@@ -104,11 +105,11 @@ const closeInfoWindow = () => setInfowindowShown(false);
 
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '400px' }}
-        center={selectedStoreLocation ? { lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude } : { lat: 0, lng: 0 }}
+        center={selectedStoreLocation ? { lat: selectedStoreLocation.location.lat, lng: selectedStoreLocation.location.lng } : { lat: 0, lng: 0 }}
         zoom={18}
       >        {isOpen && selectedStoreLocation && (
-        <InfoWindow position={{ lat: selectedStoreLocation.latitude, lng: selectedStoreLocation.longitude }} disableAutoClose={true}>
-          <h3>{selectedStoreLocation.store}</h3>
+        <InfoWindow position={{ lat: selectedStoreLocation.location.lat, lng: selectedStoreLocation.location.lng }} disableAutoClose={true}>
+          <h3>{selectedStoreLocation.name}</h3>
         </InfoWindow>
       )}
       </GoogleMap>
@@ -174,7 +175,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
                     <button className="btn" onClick={async () => {
                       
                       try {
-                        const response = await axios.post(`${url}/api/cheapest`, JSON.stringify(list.products), {
+                        const response = await axios.post(`${url}/api/cheapest-store`, JSON.stringify(list.products), {
                           headers: {
                             'Content-Type': 'application/json',
                           }
@@ -222,7 +223,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
                   {cheapestStores.map((store, index) => (
                     <li key={index} className="list-group-item">
                       <div>
-                        В <b>{store.store}</b> можете да го закупите за обща сума от{' '}
+                        В <b>{store.name}</b> можете да го закупите за обща сума от{' '}
                         <b>
                           {new Intl.NumberFormat('bg-BG', {
                             style: 'currency',
@@ -230,8 +231,8 @@ const closeInfoWindow = () => setInfowindowShown(false);
                           }).format(store.totalPrice.toString())}
                         </b>
                       </div>
-                      <button className={`btn btn-sm `} onClick={() => handleStoreClick(store)}>
-                        <FontAwesomeIcon icon={faLocationArrow} /></button>
+                      {/* <button className={`btn btn-sm `} onClick={() => handleStoreClick(store)}>
+                        <FontAwesomeIcon icon={faLocationArrow} /></button> */}
                     </li>
                   ))}
                 </ul>

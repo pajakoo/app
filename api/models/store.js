@@ -6,8 +6,7 @@ const storeSchema = new mongoose.Schema({
   location: {
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
-  },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  }
 });
 
 const Store = mongoose.model('Store', storeSchema);

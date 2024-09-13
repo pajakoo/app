@@ -282,7 +282,7 @@ function Client() {
  
 
     try {
-      const response = await axios.post(`${url}/api/cheapest`, JSON.stringify(shoppingList), {
+      const response = await axios.post(`${url}/-store`, JSON.stringify(shoppingList), {
         headers: {
           'Content-Type': 'application/json',
         }

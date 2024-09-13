@@ -635,6 +635,90 @@ app.get('/api/product/:barcode/history', async (req, res) => {
 });
 
 
+// Helper function to check if an ID is a valid ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id) && new mongoose.Types.ObjectId(id).toString() === id;
+};
+
+app.post('/api/cheapest-store', async (req, res) => {
+  const productList = req.body;  // Assuming productList is an array of product IDs like [productId1, productId2, ...]
+
+  try {
+      // Validate product IDs and filter out invalid ones
+      const validProductIds = productList
+          .filter(product =>  new mongoose.Types.ObjectId(product.productId))  // Ensure only valid ObjectId strings are included
+          .map(product => new mongoose.Types.ObjectId(product.productId));
+
+      if (validProductIds.length === 0) {
+          return res.status(400).json({ message: 'Invalid product IDs' });
+      }
+
+      // Fetch the latest price for each product in each store
+      const latestPrices = await Price.aggregate([
+          {
+              $match: {
+                  product: { $in: validProductIds }
+              }
+          },
+          {
+              $sort: { date: -1 }  // Sort by the latest date
+          },
+          {
+              $group: {
+                  _id: { store: '$store', product: '$product' },
+                  latestPrice: { $first: '$$ROOT' }  // Get the most recent price
+              }
+          }
+      ]);
+
+      if (!latestPrices.length) {
+          return res.status(404).json({ message: 'No prices found for the requested products' });
+      }
+
+      // Group the prices by store and calculate the total price for each store
+      const storePriceMap = latestPrices.reduce((acc, price) => {
+          const storeId = price._id.store.toString();
+          if (!acc[storeId]) {
+              acc[storeId] = { storeId, totalPrice: 0, products: [] };
+          }
+          acc[storeId].totalPrice += parseFloat(price.latestPrice.price.toString());
+          acc[storeId].products.push({
+              productId: price._id.product,
+              price: parseFloat(price.latestPrice.price.toString())
+          });
+          return acc;
+      }, {});
+
+      // Convert the storePriceMap into an array for easier processing
+      const storePrices = Object.values(storePriceMap);
+
+      // Sort the stores by the total price to get the cheapest ones
+      storePrices.sort((a, b) => a.totalPrice - b.totalPrice);
+
+      // Fetch store details for each store in the sorted list
+      const storesWithDetails = await Promise.all(
+          storePrices.map(async (storeData) => {
+              const store = await Store.findById(storeData.storeId).exec();
+              return {
+                  storeId: store._id,
+                  name: store.name,
+                  location: store.location,
+                  totalPrice: storeData.totalPrice.toFixed(2),  // Format total price to 2 decimal places
+                  products: storeData.products  // Return product-wise prices
+              };
+          })
+      );
+
+      // Return the list of stores sorted by total price
+      res.json(storesWithDetails);
+  } catch (error) {
+      console.error('Error fetching the cheapest stores:', error);
+      res.status(500).json({ error: 'An error occurred while fetching the cheapest stores' });
+  }
+});
+
+
+
 app.post('/api/cheapest', async (req, res) => {
     const productList = req.body;
    

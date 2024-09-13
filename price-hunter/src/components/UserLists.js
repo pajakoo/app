@@ -91,7 +91,7 @@ const UserLists = () => {
                     </ul>
                     <Card.Footer><Button onClick={async()=>{
                       try {
-                        const response = await axios.post(`${url}/api/cheapest`, JSON.stringify(list.products), {
+                        const response = await axios.post(`${url}/api/cheapest-store`, JSON.stringify(list.products), {
                           headers: {
                             'Content-Type': 'application/json',
                           }
@@ -127,7 +127,7 @@ const UserLists = () => {
             {cheapestStores.map((store, index) => (
               <li key={index} className="list-group-item">
                 <div>
-                  В <b>{store.store}</b> можете да го закупите за обща сума от{' '}
+                  В <b>{store.name}</b> можете да го закупите за обща сума от{' '}
                   <b>
                     {new Intl.NumberFormat('bg-BG', {
                       style: 'currency',

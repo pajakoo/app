@@ -15,7 +15,6 @@ import axios from 'axios';
 
 import StoreTypeahead from './StoreTypeahead';
 
-
 function Admin() {
   const videoRef = useRef(null);
   const codeReader = useRef(null);
@@ -23,7 +22,6 @@ function Admin() {
   const [disabledName, setDisabledName] = useState(false);
   const [store, setStore] = useState(null);
   const [name, setName] = useState('');
-  // const [stores, setStores] = useState([]);
   const [price, setPrice] = useState('');
   const [products, setProducts] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -47,8 +45,6 @@ function Admin() {
     setStores([...stores, newStore]); // Update the stores list with the new store
     console.log('New store created:', newStore);
   };
-
-
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -148,7 +144,6 @@ function Admin() {
 
   const handleAddProduct = async () => {
     try {
-      // debugger;
       if (store && !stores.some(s => s.name === store.name)) {
         setShowPreloader(true);
         const response = await axios.post(`${url}/api/stores`, { name: store.name });
@@ -169,17 +164,13 @@ function Admin() {
         userId: user._id
       });
 
-      // if (response.status === 200) {
-        const productsData = await axios.get(`${url}/api/products`, { params: { addedBy: user._id } });
-        setProducts(productsData.data);
-        setShowPreloader(false);
-        setBarcode('');
-        setName('');
-        setPrice('');
-        handleClearStore();
-      // } else {
-      //   console.error('Error creating product');
-      // }
+      const productsData = await axios.get(`${url}/api/products`, { params: { addedBy: user._id } });
+      setProducts(productsData.data);
+      setShowPreloader(false);
+      setBarcode('');
+      setName('');
+      setPrice('');
+      handleClearStore();
     } catch (error) {
       console.error('Error sending request:', error);
     }
@@ -189,7 +180,6 @@ function Admin() {
     try {
       const response = await axios.delete(`${url}/api/prices/${priceId}`, { params: { addedBy: user._id } });
       if (response.status === 200) {
-        //alert(response.data.message);
         const productsData = await axios.get(`${url}/api/products`, { params: { addedBy: user._id } });
         setProducts(productsData.data);
       } else {
@@ -231,6 +221,8 @@ function Admin() {
     });
   };
 
+  // Function to check if all input fields are filled
+  const isAddProductButtonDisabled = !barcode || !name || !price || !store;
 
   return (
     <section className="shadow-blue white-bg padding section-min-hight-620">
@@ -263,41 +255,14 @@ function Admin() {
 
           <StoreTypeahead stores={stores} onCreateStore={handleCreateStore} onStoreSelect={setStore} selectedStore={store} />
           
-          {/* <Typeahead
-            id="storeTypeahead"
-            options={stores}
-            labelKey="name"
-            placeholder="Магазин"
-            selected={store ? [store] : []}
-            onChange={handleInputChange}
-            renderInput={({ inputRef, referenceElementRef, ...props }) => (
-              <div className="input-group">
-                <input
-                  {...props}
-                  ref={(ref) => {
-                    inputRef(ref);
-                    inputRef.current = ref; // Assign the ref to inputRef.current
-                  }}
-                  className="form-control"
-                  onBlur={(e) => {  setNewStoreName(e.target.value);  }} 
-                />
-                {store && (
-                  <div className="input-group-append">
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={handleClearStore}
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          /> */}
-
           <div className="d-flex justify-content-end">
-            <button className="btn btn-primary" onClick={handleAddProduct }>Добави продукт</button>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleAddProduct} 
+              disabled={isAddProductButtonDisabled}
+            >
+              Добави продукт
+            </button>
           </div>
         </div>
         <h4>Добавени от мен продукти</h4>
