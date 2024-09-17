@@ -576,7 +576,7 @@ function Client() {
 
       <div className="mb-4">
         <div className="paragraph"> 
-          <span className="text-secondary">Графика с история на цената за избрания продукт </span>{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в магазин - ${newStoreName}`}
+          <span className="text-secondary">Графика с история на цената за избрания продукт</span><span class="text-store">{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в - ${newStoreName}`}</span>
 </div>
 <div>
 
@@ -584,7 +584,7 @@ function Client() {
             id="storeTypeahead"
             options={stores}
             labelKey="name"
-            placeholder="Всички магазини"
+            placeholder="Избери магазин"
             selected={store ? [store] : []}
             onChange={ handleStoreChange}
             renderInput={({ inputRef, referenceElementRef, ...props }) => (

@@ -225,7 +225,7 @@ function Admin() {
   const isAddProductButtonDisabled = !barcode || !name || !price || !store;
 
   return (
-    <section className="shadow-blue white-bg padding section-min-hight-620">
+    <section className="shadow-blue white-bg padding section-min-hight-620 add-product-apge">
       <h4 className="mt-4">Добави продукт по баркод</h4>
       <div className="mb-3">
         <div className="mb-3">

@@ -178,6 +178,22 @@ video {
 
 }
 
+.pajak-list .btn {
+  font-size: 16px;;
+}
+
+.paragraph {
+  padding:12px!important;
+}
+
+.paragraph .text-store {
+  font-weight: 500;
+}
+
+.paragraph > span {
+  font-size: 12px;
+}
+
 .btn-pajak {
   --fa-font-solid: normal 900 1em/1 "Font Awesome 6 Solid";
   --fa-font-regular: normal 400 1em/1 "Font Awesome 6 Regular";
@@ -526,6 +542,13 @@ box-shadow: 5px 8px 4px 3px rgba(0, 0, 0, 0.4);;
 
 }
 
+
+.add-product-apge {
+  .dropdown-menu {
+    top:42px!important;
+    left:12px!important;
+  }
+}
 
 
 
