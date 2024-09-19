@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThList, faThumbsUp, faSearch, faPlus, faBookmark, faUsers } from '@fortawesome/free-solid-svg-icons';
 //cmd+K+cmd+0 folding functions ( unfold  cmd+K +cmd+J )
 // Components
 import Client from './Client';
@@ -152,44 +153,44 @@ function App() {
           <div className="user-name">{user ? user.displayname : ''}</div>
             <span className="site-slogan">{user ? user.roles : ''}</span>
             <nav>
-              <ul className="navbar-nav">
-              <li className="nav-item">
-                <Link className="nav-link" to="/" onClick={handleToggle}>
-                  Препоръчани списъци
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/client" onClick={handleToggle}>
-                  Разгледай продути
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/add" onClick={handleToggle}>
-                  Добави продукт
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/user-lists" onClick={handleToggle}>
-                  Моите запазени списъци
-                </Link>
-              </li>
-              { checkUserRights('66e42aa8f1824e0a11ddfe1b') && (
-                <li className="nav-item">
-                  <Link className="nav-link" to="/users" onClick={handleToggle}>
-                    Права на потребители
-                  </Link>
-                </li>
-              )}
-               <li className="nav-item" onClick={handleToggle}>
-               <div className="site-wrapper">
-      {user ? (
-        <LogoutButton handleLogout={handleLogout} />
-      ) : (
-        <LoginButton handleLogin={handleLogin} />
-      )}
-    </div>
-              </li>
-            </ul>
+            <ul className="navbar-nav">
+        <li className="nav-item">
+          <Link className="nav-link" to="/" onClick={handleToggle}>
+            <FontAwesomeIcon icon={faThumbsUp} /> Препоръчани списъци
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/client" onClick={handleToggle}>
+            <FontAwesomeIcon icon={faSearch} /> Разгледай продукти
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/add" onClick={handleToggle}>
+            <FontAwesomeIcon icon={faPlus} /> Добави продукт
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/user-lists" onClick={handleToggle}>
+            <FontAwesomeIcon icon={faBookmark} /> Моите запазени списъци
+          </Link>
+        </li>
+        {checkUserRights('66e42aa8f1824e0a11ddfe1b') && (
+          <li className="nav-item">
+            <Link className="nav-link" to="/users" onClick={handleToggle}>
+              <FontAwesomeIcon icon={faUsers} /> Права на потребители
+            </Link>
+          </li>
+        )}
+        <li className="nav-item">
+          <div className="site-wrapper">
+            {user ? (
+              <LogoutButton handleLogout={handleLogout} />
+            ) : (
+              <LoginButton handleLogin={handleLogin} />
+            )}
+          </div>
+        </li>
+      </ul>
             {/* <ul className="navbar-nav ms-auto">
               <li className="nav-item" onClick={handleToggle}>
                 <Logout /> 

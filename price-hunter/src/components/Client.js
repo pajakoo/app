@@ -230,16 +230,7 @@ function Client() {
     }
   };
 
-  const handleRemoveProduct = (product) => {
-    setShoppingList((prevList) => prevList.filter((p) => p._id !== product._id));
-    if ( cheapestStores.length < 1) setShowMap(false);
-    setProductPriceHistories((prevHistories) => {
-      const updatedHistories = { ...prevHistories };
-      delete updatedHistories[product._id];
-      return updatedHistories;
-    });
-    setChartDataConfig({labels:[]});
-  };
+
 
   const handleSaveList = async () => {
     
@@ -450,6 +441,7 @@ function Client() {
         findProductInStores(product._id);
         handleClearStore();
     }
+
   
     // Update the shopping list to reflect the active state
     setShoppingList(prevList =>
@@ -461,6 +453,17 @@ function Client() {
   };
   
   
+  const handleRemoveProduct = (product) => {
+    if (selectedProduct && selectedProduct._id === product._id) { handleChartProductClick(product) }
+    setShoppingList((prevList) => prevList.filter((p) => p._id !== product._id));
+    if ( cheapestStores.length < 1) setShowMap(false);
+    setProductPriceHistories((prevHistories) => {
+      const updatedHistories = { ...prevHistories };
+      delete updatedHistories[product._id];
+      return updatedHistories;
+    });
+    setChartDataConfig({labels:[]});
+  };
   
   const renderMap = () => {
     if (loadError) {
@@ -572,11 +575,11 @@ function Client() {
 
       {/* -{chartDataConfig != null ?  "true" : "false"}+ */}
 
-      {chartDataConfig.labels.length  > 0  && (
+      {chartDataConfig.labels && chartDataConfig.labels.length  > 0  && (
 
       <div className="mb-4">
         <div className="paragraph"> 
-          <span className="text-secondary">Графика с история на цената за избрания продукт</span><span class="text-store">{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в - ${newStoreName}`}</span>
+          <span className="text-secondary">Графика с история на цената за избрания продукт</span><span className="text-store">{ !newStoreName  ? `, събирана до момента от всички магазини.` : ` само в - ${newStoreName}`}</span>
 </div>
 <div>
 
