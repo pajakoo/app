@@ -245,13 +245,18 @@ function Admin() {
             onClick={handleNameFieldClick}
             placeholder="Име"
           />
-          <input
-            type="number"
-            className="form-control"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Цена"
-          />
+<input
+  type="text"
+  className="form-control"
+  value={price}
+  onChange={(e) => {
+    let value = e.target.value
+      .replace(/[^0-9.]/g, '')         // Allow only digits and periods
+      .replace(/(\..*)\./g, '$1');     // Allow only one period
+    setPrice(value);
+  }}
+  placeholder="Цена"
+/>
 
           <StoreTypeahead stores={stores} onCreateStore={handleCreateStore} onStoreSelect={setStore} selectedStore={store} />
           
@@ -300,7 +305,7 @@ function Admin() {
                           <div className="price-item-header">
                             <span className="store-info">
                               {store.store.name}
-                            </span><span>- <b>{store.price.$numberDecimal}лв.</b></span> 
+                            </span><span>- <b>{store.price.$numberDecimal}лв</b></span> 
                             
                           </div>
                           <span className="price-date">
