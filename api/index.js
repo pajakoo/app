@@ -640,7 +640,118 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id) && new mongoose.Types.ObjectId(id).toString() === id;
 };
 
+
+app.post('/api/shopping/cheapest-store', async (req, res) => {
+  const shoppingList = req.body; // [{ productId, quantity }, { productId, quantity }, ...]
+
+  try {
+    // Step 1: Fetch all stores
+    const stores = await Store.find(); // Assuming you have a Store model
+
+    let cheapestStore = null;
+    let lowestTotalPrice = Number.MAX_VALUE;
+
+    // Step 2: Iterate over each store and check if it has all products from the shopping list
+    for (const store of stores) {
+      let totalPrice = 0;
+      let storeHasAllProducts = true;
+
+      // Step 3: Iterate through the shopping list
+      for (const item of shoppingList) {
+        const price = await Price.findOne({ store: store._id, product: item.productId });
+
+        if (!price) {
+          // If the product is not available in the store, skip this store
+          storeHasAllProducts = false;
+          break;
+        }
+
+        // Calculate total price for this product in the store
+        totalPrice += parseFloat(price.price) * item.quantity;
+      }
+
+      // If the store has all products, check if it's the cheapest one
+      if (storeHasAllProducts && totalPrice < lowestTotalPrice) {
+        lowestTotalPrice = totalPrice;
+        cheapestStore = store;
+      }
+    }
+
+    // Step 4: Return the cheapest store or an error message if none found
+    if (cheapestStore) {
+      res.json({
+        store: cheapestStore,
+        totalPrice: lowestTotalPrice,
+      });
+    } else {
+      res.status(404).json({ message: 'No store has all the products from the shopping list.' });
+    }
+
+  } catch (error) {
+    console.error('Error finding the cheapest store:', error);
+    res.status(500).json({ message: 'An error occurred while processing your request.' });
+  }
+});
+
+
+
 app.post('/api/cheapest-store', async (req, res) => {
+  const shoppingList = req.body; // [{ productId, quantity }, { productId, quantity }, ...]
+
+  try {
+    // Step 1: Fetch all stores
+    const stores = await Store.find(); // Assuming you have a Store model
+
+    const storePrices = [];
+
+    // Step 2: Iterate over each store and check if it has all products from the shopping list
+    for (const store of stores) {
+      let totalPrice = 0;
+      let storeHasAllProducts = true;
+
+      // Step 3: Iterate through the shopping list
+      for (const item of shoppingList) {
+        const price = await Price.findOne({ store: store._id, product: item.productId });
+
+        if (!price) {
+          // If the product is not available in the store, skip this store
+          storeHasAllProducts = false;
+          break;
+        }
+
+        // Calculate total price for this product in the store
+        totalPrice += parseFloat(price.price) * item.quantity;
+      }
+
+      // If the store has all products, push the store and total price to storePrices array
+      if (storeHasAllProducts) {
+        storePrices.push({
+          store,
+          totalPrice
+        });
+      }
+    }
+
+    // Step 4: Sort the stores by total price in ascending order
+    storePrices.sort((a, b) => a.totalPrice - b.totalPrice);
+
+    // Step 5: Return the sorted list of stores
+    if (storePrices.length > 0) {
+      res.json(storePrices);
+    } else {
+      res.status(404).json({ message: 'No store has all the products from the shopping list.' });
+    }
+
+  } catch (error) {
+    console.error('Error finding the cheapest stores:', error);
+    res.status(500).json({ message: 'An error occurred while processing your request.' });
+  }
+});
+
+
+
+
+app.post('/api/cheapest-store2', async (req, res) => {
   const productList = req.body;  // Assuming productList is an array of product IDs like [productId1, productId2, ...]
 
   try {
