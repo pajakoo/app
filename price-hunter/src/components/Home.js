@@ -171,8 +171,8 @@ const closeInfoWindow = () => setInfowindowShown(false);
                       ))}
                     </ol>
                   </div>
-                  <div className='text-right' id='personBox'>
-                    <button className="btn" onClick={async () => {
+                  <div className='text-right'  id='personBox'>
+                    <button className="btn"  onClick={async () => {
                       
                       try {
                         const response = await axios.post(`${url}/api/cheapest-store`, JSON.stringify(list.products), {
@@ -188,7 +188,7 @@ const closeInfoWindow = () => setInfowindowShown(false);
                     }} >
                       <FontAwesomeIcon icon={faLineChart} /> Провери цената
                     </button>
-                    <button className="btn"  >
+                    <button className="btn" disabled >
                       <FontAwesomeIcon icon={faShareAlt} /> Сподели
                     </button>
                   </div>

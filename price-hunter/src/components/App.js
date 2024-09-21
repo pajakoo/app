@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThList, faThumbsUp, faSearch, faPlus, faBookmark, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faThList, faThumbsUp, faSearch, faPlus, faBookmark, faUsers, faSignOut, faSignIn } from '@fortawesome/free-solid-svg-icons';
 //cmd+K+cmd+0 folding functions ( unfold  cmd+K +cmd+J )
 // Components
 import Client from './Client';
@@ -117,21 +117,17 @@ function App() {
 
   const LoginButton = ({ handleLogin }) => {
     return (
-      <div>
-        <button className="btn btn-link nav-link" onClick={handleLogin}>
-          <i className="fa fa-sign-in"></i> Вход
-        </button>
-      </div>
+      <Link className="nav-link"   onClick={handleLogin}>
+        <FontAwesomeIcon icon={faSignIn} /> Вход
+      </Link>
     );
   };
   
   const LogoutButton = ({ handleLogout }) => {
     return (
-      <div>
-        <button className="btn btn-link nav-link" onClick={handleLogout}>
-          <i className="fa fa-sign-out"></i> Изход
-        </button>
-      </div>
+      <Link className="nav-link"   onClick={handleLogout}>
+        <FontAwesomeIcon icon={faSignOut} /> Изход
+      </Link>
     );
   };
 
@@ -182,13 +178,11 @@ function App() {
           </li>
         )}
         <li className="nav-item">
-          <div className="site-wrapper">
             {user ? (
               <LogoutButton handleLogout={handleLogout} />
             ) : (
               <LoginButton handleLogin={handleLogin} />
             )}
-          </div>
         </li>
       </ul>
             {/* <ul className="navbar-nav ms-auto">

@@ -605,3 +605,7 @@ box-shadow: 5px 8px 4px 3px rgba(0, 0, 0, 0.4);;
   color: grey;
   font-size: 14px;
 }
+
+button.btn:disabled {
+  border:none;
+} 

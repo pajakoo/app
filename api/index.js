@@ -734,13 +734,7 @@ app.post('/api/cheapest-store', async (req, res) => {
 
     // Step 4: Sort the stores by total price in ascending order
     storePrices.sort((a, b) => a.totalPrice - b.totalPrice);
-
-    // Step 5: Return the sorted list of stores
-    if (storePrices.length > 0) {
-      res.json(storePrices);
-    } else {
-      res.status(404).json({ message: 'No store has all the products from the shopping list.' });
-    }
+    res.json(storePrices);
 
   } catch (error) {
     console.error('Error finding the cheapest stores:', error);
