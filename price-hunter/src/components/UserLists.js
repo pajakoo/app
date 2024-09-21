@@ -127,7 +127,7 @@ const UserLists = () => {
             {cheapestStores.map((store, index) => (
               <li key={index} className="list-group-item">
                 <div>
-                  В <b>{store.name}</b> можете да го закупите за обща сума от{' '}
+                  В <b>{store.store.name}</b> можете да го закупите за обща сума от{' '}
                   <b>
                     {new Intl.NumberFormat('bg-BG', {
                       style: 'currency',
