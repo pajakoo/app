@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Моето Приложение</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Основни стилове */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: #333;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #0071e3;
+      color: #fff;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #005bb5;
+    }
+
+    .parallax {
+      position: relative;
+      height: 100vh;
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .parallax-1 {
+      background-image: url('mac-image-1.jpg');
+    }
+
+    /* Секция app */
+    #app {
+      padding: 100px 20px;
+      background-color: #f5f5f7;
+      text-align: center;
+    }
+
+    /* Кейфрейм ефект за плавно движение */
+    @keyframes floatEffect {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    /* Стил за анимираното изображение */
+    .animated-image {
+      max-width: 80%;
+      animation: floatEffect 3s ease-in-out infinite;
+      border-radius: 15px;
+    }
+
+    /* Глобален стил за бутоните */
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #0071e3;
+      color: #fff;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #005bb5;
+    }
+
+    /* Паралакс секции */
+    .parallax-2 {
+      background-image: url('mac-image-2.jpg');
+    }
+
+    .parallax-3 {
+      background-image: url('mac-image-3.jpg');
+    }
+
+    /* Централизиране на съдържанието */
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #fff;
+    }
+
+    /* Стил за текстови секции */
+    .text-section {
+      padding: 100px 20px;
+      text-align: center;
+      background-color: #f5f5f7;
+    }
+
+    .text-section h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .text-section p {
+      font-size: 1.5rem;
+      color: #6e6e73;
+    }
+
+    /* Градиентен фон за по-съвременен вид */
+    .gradient {
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+    }
+
+    /* Стилизиране на навигацията */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      z-index: 10;
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    nav a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #0071e3;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Навигация -->
+  <nav>
+    <a href="#home">Начало</a>
+    <a href="#about">Полза</a>
+    <a href="#app">Приложение</a>
+    <a href="#features">Функции</a>
+    <a href="#contact">Контакти</a>
+  </nav>
+
+  <!-- Паралакс секция 1 -->
+  <section id="home" class="parallax parallax-1 gradient">
+    <div class="content">
+      <h1>Ловец на цени</h1>
+      <p>Да открием най-добрата цена заедно <a href="index.html" style="color:#8b93be!important;">тук</a>.</p>
+      <a href="index.html"><img src="images/app_screen.png" alt="App Screenshot" class="animated-image"></a>
+      <a href="#about" class="button">Научете как</a>
+    </div>
+  </section>
+
+  <!-- Текстова секция: Какво е приложението -->
+  <section id="about" class="text-section">
+    <h1>Какво е Ловецът на цени?</h1>
+    <p>Това приложение за създаване на списъци за пазаруване, сравняване на цени и намиране на най-изгодните оферти. С него можете лесно да организирате пазаруването си и да спестите както време, така и пари. Независимо дали търсите по-евтини продукти или нови магазини, Price Hunter ви помага да вземете най-доброто решение за вашия бюджет.</p>
+    <a href="#app" class="button">Продължи</a>
+  </section>
+
+
+    <!-- Текстова секция: Функции -->
+    <section id="app" class="text-section">
+      <h1>Как работи приложението?</h1>
+      <p>Използвайте приложението за:</p>
+      <ul style="list-style: none; font-size: 1.5rem; line-height: 1.8;">
+        <li>1. Създаване на списъци за пазаруване</li>
+        <li>2. Добавяне на продукти чрез въвеждане на баркод</li>
+        <li>3. Сравняване на цени в различни магазини</li>
+        <li>4. Намиране на най-добрите оферти с натискане на бутон</li>
+        <li>5. Следене на цените на любимите продукти и проверка дали промоциите за тях са реални</li>
+      </ul>
+      <a href="#features" class="button">Открийте повече</a>
+    </section>
+
+
+  <!-- Паралакс секция 2 -->
+  <section id="features" class="parallax parallax-2 gradient">
+    <div class="content">
+      <h1>Функции на приложението</h1>
+      <p>Добавяйте продукти, сравнявайте магазини и намерете най-добрата цена</p>
+      <a href="#contact" class="button">Връзка с нас</a>
+    </div>
+  </section>
+
+
+
+  <!-- Паралакс секция 3 -->
+  <section id="contact" class="parallax parallax-3 gradient">
+    <div class="content">
+      <h1>Свържете се с нас за предложения и проблеми</h1>
+      <p>Имейл: info@karlovobusiness.com</p>
+      <a href="mailto:info@karlovobusiness.com" class="button">Изпратете ни имейл</a>
+    </div>
+  </section>
+
+</body>
+</html>
