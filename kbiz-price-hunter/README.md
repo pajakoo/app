@@ -56,6 +56,18 @@ npx prisma migrate dev
 npm run dev
 ```
 
+## Docker setup (recommended)
+```bash
+docker compose up --build
+```
+
+Then run migrations in another terminal:
+```bash
+docker compose exec app npx prisma migrate dev
+```
+
+Open http://localhost:3000/en
+
 ## Netlify deploy
 1) Push this repo to GitHub.
 2) Create a new site in Netlify from the repo.
