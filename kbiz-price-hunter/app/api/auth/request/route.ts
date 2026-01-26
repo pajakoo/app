@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import crypto from "crypto";
+import { defaultLocale, locales } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 
 const TOKEN_TTL_MINUTES = 30;
@@ -8,6 +9,10 @@ const TOKEN_TTL_MINUTES = 30;
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const locale =
+    typeof body?.locale === "string" && locales.includes(body.locale)
+      ? body.locale
+      : defaultLocale;
 
   if (!email) {
     return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
@@ -30,11 +35,12 @@ export async function POST(request: Request) {
     },
   });
 
+  const headerList = await headers();
   const origin =
-    headers().get("origin") ??
+    headerList.get("origin") ??
     process.env.NEXT_PUBLIC_SITE_URL ??
     "http://localhost:3000";
-  const magicLink = `${origin}/api/auth/verify?token=${token}`;
+  const magicLink = `${origin}/api/auth/verify?token=${token}&locale=${locale}`;
 
   return NextResponse.json({
     ok: true,

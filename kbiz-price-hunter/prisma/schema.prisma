@@ -43,6 +43,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   prices      Price[]
+  listItems   ShoppingListItem[]
 }
 
 model Store {
@@ -57,7 +58,7 @@ model Store {
 model Price {
   id         String   @id @default(cuid())
   amount     Float
-  currency   String   @default("BGN")
+  currency   String   @default("EUR")
   recordedAt DateTime @default(now())
   productId  String
   storeId    String

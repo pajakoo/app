@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getSessionCookieName } from "@/lib/auth";
 
 export async function POST() {
-  const sessionCookie = cookies().get(getSessionCookieName());
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(getSessionCookieName());
 
   if (sessionCookie?.value) {
     await prisma.session.deleteMany({

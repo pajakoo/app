@@ -24,6 +24,38 @@ npm run dev
 - Implement magic-link auth (email provider + token validation).
 - Replace demo products with live data ingestion.
 
+## Local setup (step-by-step)
+1) Install Postgres 16 (Homebrew):
+```
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+2) Create the database:
+```
+/opt/homebrew/opt/postgresql@16/bin/createdb kbiz_price_hunter
+```
+
+3) Create `.env`:
+```
+cp .env.example .env
+```
+
+4) Update `DATABASE_URL` in `.env`:
+```
+DATABASE_URL="postgresql://YOUR_USER@localhost:5432/kbiz_price_hunter"
+```
+
+5) Run Prisma migration:
+```
+npx prisma migrate dev
+```
+
+6) Start the app:
+```
+npm run dev
+```
+
 ## Netlify deploy
 1) Push this repo to GitHub.
 2) Create a new site in Netlify from the repo.

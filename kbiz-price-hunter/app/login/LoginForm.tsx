@@ -2,7 +2,23 @@
 
 import { useState } from "react";
 
-export default function LoginForm() {
+type Props = {
+  locale: string;
+  emailLabel: string;
+  placeholder: string;
+  sendLabel: string;
+  sendingLabel: string;
+  devLinkLabel: string;
+};
+
+export default function LoginForm({
+  locale,
+  emailLabel,
+  placeholder,
+  sendLabel,
+  sendingLabel,
+  devLinkLabel,
+}: Props) {
   const [status, setStatus] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +35,7 @@ export default function LoginForm() {
     const response = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, locale }),
     });
 
     const payload = await response.json();
@@ -38,10 +54,10 @@ export default function LoginForm() {
   return (
     <div className="section">
       <form className="form-shell" onSubmit={handleSubmit}>
-        <label htmlFor="email">Email address</label>
-        <input id="email" name="email" type="email" placeholder="you@domain.com" required />
+        <label htmlFor="email">{emailLabel}</label>
+        <input id="email" name="email" type="email" placeholder={placeholder} required />
         <button className="button" type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send magic link"}
+          {loading ? sendingLabel : sendLabel}
         </button>
       </form>
       {status ? (
@@ -49,7 +65,7 @@ export default function LoginForm() {
           <p>{status}</p>
           {link ? (
             <p style={{ marginTop: 8 }}>
-              Dev-only link: <a href={link}>{link}</a>
+              {devLinkLabel} <a href={link}>{link}</a>
             </p>
           ) : null}
         </div>

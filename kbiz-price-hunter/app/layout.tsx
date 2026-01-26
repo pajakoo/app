@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Newsreader, Space_Grotesk } from "next/font/google";
+import { Manrope, Sora } from "next/font/google";
 import "./globals.css";
 
-const headingFont = Newsreader({
+const headingFont = Sora({
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  weight: ["400", "600", "700"],
   variable: "--font-heading",
 });
 
-const bodyFont = Space_Grotesk({
+const bodyFont = Manrope({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-body",
 });
 
@@ -31,36 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${headingFont.variable} ${bodyFont.variable}`}>
-        <header className="site-header">
-          <div className="container nav-wrap">
-            <Link className="brand" href="/">
-              Kbiz Price Hunter
-            </Link>
-            <nav className="nav-links">
-              <Link href="/products">Products</Link>
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/login" className="button ghost">
-                Get Access
-              </Link>
-            </nav>
-          </div>
-        </header>
         {children}
-        <footer className="site-footer">
-          <div className="container footer-grid">
-            <div>
-              <h3>Stay in control of prices.</h3>
-              <p>
-                Built for quick comparisons, clean indexing, and future-ready
-                alerts.
-              </p>
-            </div>
-            <div className="footer-links">
-              <Link href="/products">Browse products</Link>
-              <Link href="/login">Request a magic link</Link>
-            </div>
-          </div>
-        </footer>
       </body>
     </html>
   );

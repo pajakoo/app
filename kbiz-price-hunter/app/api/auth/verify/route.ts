@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { defaultLocale, locales } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getSessionCookieName } from "@/lib/auth";
 
@@ -8,6 +9,11 @@ const SESSION_TTL_DAYS = 7;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
+  const localeParam = searchParams.get("locale");
+  const locale =
+    localeParam && locales.includes(localeParam as (typeof locales)[number])
+      ? localeParam
+      : defaultLocale;
 
   if (!token) {
     return NextResponse.json({ ok: false, error: "Missing token." }, { status: 400 });
@@ -45,7 +51,9 @@ export async function GET(request: Request) {
     },
   });
 
-  const response = NextResponse.redirect(new URL("/dashboard", request.url));
+  const response = NextResponse.redirect(
+    new URL(`/${locale}/dashboard`, request.url)
+  );
   response.cookies.set(getSessionCookieName(), sessionToken, {
     httpOnly: true,
     sameSite: "lax",

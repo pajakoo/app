@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 const SESSION_COOKIE = "kbiz_session";
 
 export async function getSession() {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) {
     return null;
   }
